@@ -1,5 +1,7 @@
 /**
- * Perpl trading-socket relay · Node, for Railway or any host that runs Node.
+ * Game server + Perpl socket relay · Node, for Railway or any host that runs Node.
+ *
+ * HTTP /api/* is the Paddock (rides, standings, streaks), see game.mjs.
  *
  * Perpl's trading WebSocket refuses connections that carry a browser Origin, so
  * a web app cannot reach it directly. This relay accepts the browser's socket
@@ -17,6 +19,7 @@
  */
 import http from "node:http";
 import { WebSocketServer, WebSocket } from "ws";
+import { handleGame } from "./game.mjs";
 
 const PORT = Number(process.env.PORT || 8787);
 const MAINNET = "wss://app.perpl.xyz";
@@ -28,9 +31,10 @@ const ALLOWED = (process.env.ALLOWED_ORIGINS || "")
   .map((s) => s.trim())
   .filter(Boolean);
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
+  if (await handleGame(req, res, ALLOWED)) return;
   res.writeHead(200, { "content-type": "text/plain" });
-  res.end("Perpl WS relay · OK. Connect with a WebSocket.");
+  res.end("Ride the Now · Monad game server + Perpl relay · OK");
 });
 
 const wss = new WebSocketServer({ noServer: true, maxPayload: 1 << 20 });

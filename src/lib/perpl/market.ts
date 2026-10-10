@@ -119,7 +119,7 @@ export function useMarketFeed(asset: string): MarketView {
           if (st.prv) l.prev = Number(st.prv) / scale;
         }
         if (typeof m.sn === "number") live.current.head = Math.max(live.current.head, m.sn);
-      } else if (m.mt === 17 && Array.isArray(m.d)) {
+      } else if ((m.mt === 17 || m.mt === 18) && Array.isArray(m.d)) {
         const sizeScale = 10 ** market.sizeDecimals;
         const fresh = (m.d as Msg[]).map((x) => {
           const at = (x.at ?? {}) as Msg;

@@ -19,6 +19,7 @@
     "@noble/hashes": "^2.2.0",
     "@scure/bip32": "^2.4.0",
     "@scure/bip39": "^2.4.0",
+    "framer-motion": "^12.40.0",
     "next": "15.5.19",
     "react": "19.1.0",
     "react-dom": "19.1.0",
