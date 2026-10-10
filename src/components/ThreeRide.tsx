@@ -2882,11 +2882,11 @@ export default function ThreeRide({
 
       // buzz: narrate real market surges as they cross thresholds
       if (prevFlow < 0.5 && flow >= 0.5) {
-        pushBuzz("🌍 world pulse (ETH) · buyers surging · right lane pays");
+        pushBuzz(`🌍 Perpl pulse (${getRideAsset()}) · buyers surging · right lane pays`);
         pushFlash("⚡ BUYERS SURGING · RIGHT LANE (LONG) PAYS");
       }
       if (prevFlow > -0.5 && flow <= -0.5) {
-        pushBuzz("🌍 world pulse (ETH) · sellers slamming · watch for trucks");
+        pushBuzz(`🌍 Perpl pulse (${getRideAsset()}) · sellers slamming · watch for trucks`);
         pushFlash("🔻 SELLERS SLAMMING · LEFT LANE (SHORT) PAYS");
       }
       prevFlow = flow;
@@ -3783,10 +3783,10 @@ export default function ThreeRide({
             className={`rounded-sm px-2 py-0.5 text-[12px] font-bold ${
               hud.flow >= 0 ? "bg-chart/20 text-chart" : "bg-blood/20 text-blood"
             }`}
-            title="the world's weather runs on ETH's live tape (the deepest feed) · your live trades ride the market YOU picked"
+            title="the world's weather runs on Perpl's live order book on Monad · the market you picked"
           >
-            {hud.flow >= 0 ? "▲ buyers pushing" : "▼ sellers pushing"} · ETH pulse
-            {armed && realRef?.current?.asset && realRef.current.asset !== "ETH" && (
+            {hud.flow >= 0 ? "▲ buyers pushing" : "▼ sellers pushing"} · {getRideAsset()} on Perpl
+            {armed && realRef?.current?.asset && realRef.current.asset !== getRideAsset() && (
               <> · trades on {realRef.current.asset}</>
             )}
           </span>

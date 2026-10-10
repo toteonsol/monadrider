@@ -23,6 +23,9 @@ import { TradeCockpit } from "./TradeCockpit";
 import { MoneyScreen } from "./MoneyScreen";
 import { SpotScreen } from "./SpotScreen";
 import { History } from "./History";
+import { ReceiptSheet } from "./ReceiptSheet";
+import { withdrawAusd } from "@/lib/perpl/onchain";
+import { publicClient } from "@/lib/wallet/mera";
 import { useLiveBridge } from "@/lib/ride/useLiveBridge";
 import { career, type Career } from "@/lib/game/rideLog";
 import { fetchStreak } from "@/lib/game/backend";
@@ -379,6 +382,22 @@ export function Game() {
         />
       )}
       {hub && <RiderHubPanel onClose={() => setHub(false)} />}
+      {bridge.receipt && !bridge.armed && (
+        <ReceiptSheet
+          receipt={bridge.receipt}
+          onClose={bridge.dismissReceipt}
+          onSpot={() => go("spot")}
+          onSweep={
+            mera.wallet
+              ? async (amount) => {
+                  const r = await withdrawAusd(publicClient, mera.wallet!, amount);
+                  void mera.refresh();
+                  return r.hash;
+                }
+              : undefined
+          }
+        />
+      )}
     </div>
   );
 }

@@ -27,6 +27,7 @@ import { publicClient, useMera } from "@/lib/wallet/mera";
 import { usePerplAccount } from "@/lib/perpl/usePerplAccount";
 import { setRideAsset } from "@/lib/game/liveFeed";
 import { setRideAddress } from "./session";
+import { saveReceipt, type Receipt } from "./receipts";
 
 export type DriveMode = "turbo" | "passenger";
 
@@ -53,6 +54,7 @@ export function useLiveBridge(asset: string) {
   const [rails, setRails] = useState<Rails>(DEFAULT_RAILS);
   const [state, setState] = useState<RideState | null>(null);
   const [armError, setArmError] = useState("");
+  const [receipt, setReceipt] = useState<Receipt | null>(null);
   const engine = useRef<RideEngine | null>(null);
   const passenger = useRef(new Passenger());
 
@@ -86,8 +88,12 @@ export function useLiveBridge(asset: string) {
     }
     const e = new RideEngine(new OnchainExecutor(publicClient, mera.wallet, m, perpl.account.id, LEVERAGE), rails);
     let seen = 0;
+    const autopilot = modeRef.current === "passenger";
     e.subscribe((s) => {
       setState(s);
+      if (s.status === "ended" && engine.current === e) {
+        setReceipt(saveReceipt(s, { asset: m.name, mode: "live", autopilot, rails: e.rails, owner: mera.address, lastMid: feedRef.current.mid }));
+      }
       for (; seen < s.fills.length; seen++) pushRideTx(s.fills[seen].txid);
       const f = s.fills[s.fills.length - 1];
       realRef.current = {
@@ -110,6 +116,7 @@ export function useLiveBridge(asset: string) {
       };
     });
     takeRideTxids(); // a fresh trail for this ride
+    setReceipt(null);
     setRideAddress(mera.address);
     passenger.current = new Passenger();
     e.start();
@@ -168,6 +175,8 @@ export function useLiveBridge(asset: string) {
     feed,
     mera,
     perpl,
+    receipt,
+    dismissReceipt: () => setReceipt(null),
     armed,
     arm,
     disarm,
