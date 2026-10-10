@@ -22,6 +22,8 @@ interface OrderUpdate {
   fs: number; // filled size (scaled)
   fp: number; // fill price (scaled)
   f: number; // fee (scaled collateral)
+  txid?: string; // Monad tx that settled it (from the update's `at`)
+  block?: number;
 }
 interface PosnState {
   szi: number; // signed human size (+long / -short)
@@ -93,6 +95,7 @@ export class PerplWs {
   private balance = 0; // free collateral (USD)
   private locked = 0; // margin locked by open positions (USD)
   private startEquity: number | null = null; // free+locked at session start
+  private forwarding: boolean | null = null; // Account.fw · one-click trading
 
   constructor(key: PerplKey) {
     this.key = key;
@@ -115,7 +118,7 @@ export class PerplWs {
   private connect(): Promise<void> {
     return new Promise((resolve, reject) => {
       if (typeof WebSocket === "undefined") return reject(new Error("no WebSocket"));
-      const ws = new WebSocket(`${PERPL.wsUrl}/ws/v1/trading`);
+      const ws = new WebSocket(`${PERPL.wsUrl}/ws/v1/trading${PERPL.wsQuery}`);
       this.ws = ws;
       let settled = false;
       const authTimer = setTimeout(() => {
@@ -244,6 +247,7 @@ export class PerplWs {
 
   private applyAccount(a: Record<string, unknown>) {
     if (typeof a.id === "number") this.accountId = a.id as number;
+    if (typeof a.fw === "boolean") this.forwarding = a.fw;
     if (typeof a.lfr === "number") {
       this.lfr = a.lfr as number;
       if (this.rqCounter < this.lfr) this.rqCounter = this.lfr;
@@ -290,6 +294,7 @@ export class PerplWs {
       if (!p) continue;
       if (TERMINAL_OK.has(st) || TERMINAL_BAD.has(st)) {
         this.pending.delete(rq);
+        const at = (o.at ?? {}) as Record<string, unknown>;
         p.resolve({
           rq,
           st,
@@ -297,6 +302,8 @@ export class PerplWs {
           fs: Number(o.fs ?? 0),
           fp: Number(o.fp ?? 0),
           f: Number(o.f ?? 0),
+          txid: typeof at.txid === "string" ? at.txid : undefined,
+          block: typeof at.b === "number" ? at.b : undefined,
         });
       }
     }
@@ -323,6 +330,12 @@ export class PerplWs {
       headBlock: this.headBlock,
       lfr: this.lfr,
     };
+  }
+
+  /** Exchange account state from the socket: free + locked AUSD, and whether
+   *  one-click trading (order forwarding) is on. */
+  account(): { accountId: number; free: number; locked: number; forwarding: boolean | null } {
+    return { accountId: this.accountId, free: this.balance, locked: this.locked, forwarding: this.forwarding };
   }
 
   /** Raw first wallet snapshot (diagnostics · reveals the real field nesting). */
@@ -538,6 +551,9 @@ export class PerplWs {
         avgPx: avgPx ? String(avgPx) : undefined,
         notional: avgPx ? filledSz * avgPx : notional,
         builderFeeUsd: 0,
+        fee: u.f / 10 ** this.collateralDecimals,
+        txid: u.txid,
+        block: u.block,
       };
     }
     return { status: "error" as const, error: `order ${u.st === 7 ? "failed" : "not filled"} (reason ${u.sr})` };

@@ -19,22 +19,17 @@ export const PERPL = {
     process.env.NEXT_PUBLIC_PERPL_TESTNET === "true"
       ? "https://testnet.perpl.xyz/api"
       : "https://app.perpl.xyz/api",
-  /** WebSocket origin · trading = `${wsUrl}/ws/v1/trading`.
-   *  Perpl's trading WS rejects BROWSER origins, so in production this must be
-   *  our Cloudflare relay (NEXT_PUBLIC_PERPL_WS_RELAY). Direct Perpl only works
-   *  server-side (Node) and is the fallback for scripts/SSR. */
-  wsUrl:
-    process.env.NEXT_PUBLIC_PERPL_WS_RELAY ||
-    (process.env.NEXT_PUBLIC_PERPL_TESTNET === "true"
-      ? "wss://testnet.perpl.xyz"
-      : "wss://app.perpl.xyz"),
-  /** The Origin Perpl must whitelist for programmatic key enrollment. In a
-   *  browser the Origin header is set automatically to the page origin; this is
-   *  only used for server-side enrollment / documentation. */
-  appOrigin:
+  /** Socket base for both Perpl streams: trading = `${wsUrl}/ws/v1/trading`,
+   *  market data = `${wsUrl}/ws/v1/market-data`. Perpl refuses browser origins
+   *  on both, so the browser always goes through our relay (relay/server.mjs). */
+  wsUrl: process.env.NEXT_PUBLIC_PERPL_WS_RELAY || "ws://localhost:8787",
+  /** Query suffix the relay reads to pick Perpl's testnet upstream. */
+  wsQuery: process.env.NEXT_PUBLIC_PERPL_TESTNET === "true" ? "?testnet=true" : "",
+  /** Perpl's web app, for the API-key page and the account screen. */
+  webUrl:
     process.env.NEXT_PUBLIC_PERPL_TESTNET === "true"
-      ? "https://ride-the-now.vercel.app"
-      : "https://hyperider.airdropsea.app",
+      ? "https://testnet.perpl.xyz"
+      : "https://app.perpl.xyz",
 } as const;
 
 /** API-key scope bitmask · 1=read, 2=trade (implies read), 3=both. We enroll
