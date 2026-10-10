@@ -1,0 +1,56 @@
+[
+  {
+    "file": "sf/bear.glb",
+    "title": "Bear",
+    "source": "https://sketchfab.com/3d-models/bear-ce0d5eb86cf5459bb6bd20244cb44b27",
+    "author": "Nyilonelycompany (https://sketchfab.com/Nyilonelycompany)",
+    "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "credit": "This work is based on \"Bear\" (https://sketchfab.com/3d-models/bear-ce0d5eb86cf5459bb6bd20244cb44b27) by Nyilonelycompany (https://sketchfab.com/Nyilonelycompany) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "modified": "compressed (meshopt, WebP 512) and simplified for the web"
+  },
+  {
+    "file": "sf/lighthouse.glb",
+    "title": "Lighthouse, Low Poly",
+    "source": "https://sketchfab.com/3d-models/lighthouse-low-poly-8cbfa6920c8e45a9a9abf37adb74dbf8",
+    "author": "FLAREMEDIA (https://sketchfab.com/flaremedia)",
+    "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "credit": "This work is based on \"Lighthouse, Low Poly\" (https://sketchfab.com/3d-models/lighthouse-low-poly-8cbfa6920c8e45a9a9abf37adb74dbf8) by FLAREMEDIA (https://sketchfab.com/flaremedia) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "modified": "compressed (meshopt, WebP 512) and simplified for the web"
+  },
+  {
+    "file": "sf/ferris-wheel.glb",
+    "title": "Ferris wheel (Low Poly)",
+    "source": "https://sketchfab.com/3d-models/ferris-wheel-low-poly-669f98a3dcf34443ae88062e498b05bb",
+    "author": "game_travel (https://sketchfab.com/game_travel)",
+    "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "credit": "This work is based on \"Ferris wheel (Low Poly)\" (https://sketchfab.com/3d-models/ferris-wheel-low-poly-669f98a3dcf34443ae88062e498b05bb) by game_travel (https://sketchfab.com/game_travel) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "modified": "compressed (meshopt, WebP 512) and simplified for the web"
+  },
+  {
+    "file": "sf/streetcar.glb",
+    "title": "Lowpoly Vintage Streetcar",
+    "source": "https://sketchfab.com/3d-models/lowpoly-vintage-streetcar-0a5a267ffc814be49592cab5bdcf5d92",
+    "author": "Flovi Studios (https://sketchfab.com/flovistudios)",
+    "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "credit": "This work is based on \"Lowpoly Vintage Streetcar\" (https://sketchfab.com/3d-models/lowpoly-vintage-streetcar-0a5a267ffc814be49592cab5bdcf5d92) by Flovi Studios (https://sketchfab.com/flovistudios) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "modified": "compressed (meshopt, WebP 512) and simplified for the web"
+  },
+  {
+    "file": "sf/capitol.glb",
+    "title": "Longworth Building Low Poly Game Ready",
+    "source": "https://sketchfab.com/3d-models/longworth-building-low-poly-game-ready-4c39ac7b1d424d8c8ac3acb8338173e2",
+    "author": "Ruslan Malovsky (https://sketchfab.com/malovsky)",
+    "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "credit": "This work is based on \"Longworth Building Low Poly Game Ready\" (https://sketchfab.com/3d-models/longworth-building-low-poly-game-ready-4c39ac7b1d424d8c8ac3acb8338173e2) by Ruslan Malovsky (https://sketchfab.com/malovsky) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "modified": "compressed (meshopt, WebP 512) and simplified for the web"
+  },
+  {
+    "file": "sf/traffic-light.glb",
+    "title": "Traffic Light (Low Poly)",
+    "source": "https://sketchfab.com/3d-models/traffic-light-low-poly-8db89d219a60466da1995316d83af100",
+    "author": "game_travel (https://sketchfab.com/game_travel)",
+    "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "credit": "This work is based on \"Traffic Light (Low Poly)\" (https://sketchfab.com/3d-models/traffic-light-low-poly-8db89d219a60466da1995316d83af100) by game_travel (https://sketchfab.com/game_travel) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+    "modified": "compressed (meshopt, WebP 512) and simplified for the web"
+  }
+]

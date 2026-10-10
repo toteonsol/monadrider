@@ -1,0 +1,752 @@
+@import "tailwindcss";
+
+/*
+  RIDE THE NOW — design tokens.
+  One confident aesthetic: Bloomberg terminal meets arcade.
+  Neon-on-black, monospace, tabular numerics. One accent (chart green),
+  one warning (blood), one bank/profit tone (sky), one present-moment (amber).
+*/
+:root {
+  /* GRAND PRIX (Direction B, user-approved boards) — asphalt & cream.
+     The world is warm near-black tarmac; type is cream; the flag colors are
+     papaya (the signature), money green (SEMANTIC only), amber, blood.
+     Flat surfaces, hard 2px steel borders, checkered strips — motorsport
+     that is playful AND premium. */
+  --ink: #111013; /* asphalt / background */
+  --ink-soft: #17161a; /* panels */
+  --ink-raised: #1c1b20; /* raised surfaces */
+  --grid: #1e1d22; /* chart grid lines */
+  --hairline: #26242a; /* quiet inner borders */
+  --steel: #3a362e; /* the pit-wall border — hard, visible, structural */
+
+  --chart: #27f2a4; /* live money — fills, profit, LIVE dots (SEMANTIC only) */
+  --chart-dim: #0f6b4a;
+  --flat: #9b958a; /* muted warm gray — secondary text */
+  /* quieter third level that still reads · ≥4.9:1 on ink, ink-soft and
+     ink-raised (WCAG AA). The old faded flat (/60–/80) fell to 3.0–4.45. */
+  --flat-dim: #8e897f;
+  --blood: #ff4d5e; /* warning, liquidation, sell pressure */
+  --bone: #f5efe2; /* cream — foreground text */
+  --amber: #ffc15e; /* the NOW line, points gold */
+  --sky: #6ab8ff; /* bank / realized profit */
+
+  /* LIVERY — papaya is the race-team signature: primary CTAs, active states,
+     the stripe under the checkered flag. Lav survives for PULSE's world. */
+  --papaya: #ff7a1a;
+  --papaya-hot: #ffa24d;
+  --lav: #a9a3ff;
+
+  /* TYPE SYSTEM (Grand Prix) — fallbacks live INSIDE var() so an undefined
+     next/font variable can never poison a declaration into the UA serif.
+     · display = Unbounded (headlines, plates, CTAs — the race-livery face)
+     · sans    = Archivo (body — editorial, readable)
+     · mono    = Geist Mono (telemetry ONLY: numbers, HUD readouts) */
+  --font-display: var(--font-unbounded, var(--font-archivo, system-ui)), "Unbounded",
+    "Archivo", system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono, ui-monospace), "SF Mono",
+    "JetBrains Mono", Menlo, Consolas, monospace;
+  --font-sans: var(--font-archivo, system-ui), "Archivo", system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
+}
+
+/* Warm skin — greets in airdropSEA's teal-gold voice while staying dark (the
+   3D game world must stay dark; only the CHROME warms). Deep teal-navy panels,
+   gold hairlines, softer green. A skin, not a fork: only these vars change. */
+:root[data-skin="warm"] {
+  --ink: #0a1114; /* warmer deep teal-navy */
+  --ink-soft: #0e181c;
+  --ink-raised: #122127;
+  --grid: #16262b;
+  --hairline: #2a3a3a; /* warmer, softer borders */
+  --chart: #35d6b0; /* teal-leaning green, closer to airdropSEA's SEA */
+  --chart-dim: #17755f;
+  --amber: #f4b942; /* airdropSEA gold */
+  --bone: #eef3f0;
+}
+/* warm skin: a whisper of airdropSEA's teal→lavender canvas behind everything
+   (dark, so the game world still reads; only a tint) */
+:root[data-skin="warm"] body {
+  background-image:
+    radial-gradient(120% 90% at 12% 0%, rgba(53, 214, 176, 0.1), transparent 55%),
+    radial-gradient(120% 90% at 92% 100%, rgba(157, 120, 220, 0.1), transparent 55%);
+  background-attachment: fixed;
+}
+/* Display headings — Unbounded, the race-livery voice. Unbounded is a WIDE
+   face: neutral tracking, and sizes read a step larger than they measure. */
+.display {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+:root[data-skin="warm"] .display {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-raised: var(--ink-raised);
+  --color-grid: var(--grid);
+  --color-hairline: var(--hairline);
+  --color-steel: var(--steel);
+  --color-chart: var(--chart);
+  --color-chart-dim: var(--chart-dim);
+  --color-flat: var(--flat);
+  --color-flat-dim: var(--flat-dim);
+  --color-blood: var(--blood);
+  --color-bone: var(--bone);
+  --color-amber: var(--amber);
+  --color-sky: var(--sky);
+  --color-papaya: var(--papaya);
+  --color-papaya-hot: var(--papaya-hot);
+  --color-lav: var(--lav);
+
+  /* GRAND PRIX GEOMETRY — the whole app squares up in one move. Pit boards
+     are rectangles, tickets have hard corners; only true dots stay round
+     (rounded-full is untouched, and small dots are circles at any radius). */
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+  --radius-xl: 5px;
+  --radius-2xl: 6px;
+  --radius-3xl: 8px;
+  --radius-4xl: 10px;
+
+  /* TYPE SYSTEM (Grand Prix):
+     · display = Unbounded (headlines, plates, CTAs — the race-livery face)
+     · body    = Archivo (editorial, readable)
+     · mono    = telemetry ONLY (numbers, HUD readouts — the instrument panel) */
+  --font-display: var(--font-unbounded, var(--font-archivo, system-ui)), "Unbounded",
+    "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono",
+    "JetBrains Mono", Menlo, Consolas, monospace;
+  --font-sans: var(--font-archivo), system-ui, sans-serif;
+}
+
+/* Telemetry numerics — opt IN to mono where digits should read like an
+   instrument (HUD, stats). Everything else now speaks Archivo. */
+.font-telemetry {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  height: 100%;
+  background: var(--ink);
+  color: var(--bone);
+  /* body reads in Archivo; Unbounded is opt-in via .display (headlines,
+     nav, CTAs) — two voices with clear jobs, not one voice everywhere */
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* kill horizontal jitter · the 3D overlay stays rock-centered like the PWA */
+  overflow-x: hidden;
+}
+
+body {
+  overscroll-behavior: none;
+  font-variant-numeric: tabular-nums;
+  /* the tarmac · flat asphalt with the faintest headlight falloff — the Grand
+     Prix world is matte, structure comes from steel borders, not texture.
+     Games paint their own full-screen worlds above. */
+  background-image:
+    radial-gradient(110% 70% at 50% 0%, rgba(245, 239, 226, 0.025), transparent 62%);
+  background-attachment: fixed;
+}
+
+/* All numerics tabular by default — the terminal feel. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Selection in brand green. */
+::selection {
+  background: color-mix(in srgb, var(--chart) 30%, transparent);
+  color: var(--bone);
+}
+
+/* Thin, dark scrollbars so chrome never competes with the canvas. */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--hairline);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Respect reduced-motion for all CSS animation. The game canvas honors it separately. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── MOTION VOCABULARY · one clock for the whole product ──────────────────
+   Excellent moments, no system: the world breathed while modals just
+   appeared. Three durations, one easing — every surface speaks them.
+     quick  120ms · state flips (press, toggle, chip)
+     std    240ms · entrances (cards, sheets, rows)
+     slow   420ms · scene-scale (boards, takeovers)              */
+:root {
+  --dur-quick: 120ms;
+  --dur-std: 240ms;
+  --dur-slow: 420ms;
+  --ease-gp: cubic-bezier(0.22, 1, 0.36, 1); /* fast out, settled landing */
+}
+@keyframes rtn-rise {
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.rtn-enter { animation: rtn-rise var(--dur-std) var(--ease-gp) both; }
+.rtn-enter-slow { animation: rtn-rise var(--dur-slow) var(--ease-gp) both; }
+
+/* ── STATE COMPLETENESS · every interactive element, designed, everywhere ──
+   Focus was styled on primary controls only; keyboards and screen-magnifier
+   users met the browser default ring or nothing. One layer guarantees the
+   whole product: a papaya focus ring offset from the element, and a real
+   pressed state on everything clickable. */
+:where(button, a, select, input, textarea, summary, [role="button"], [role="tab"], [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 2px solid var(--papaya);
+  outline-offset: 2px;
+  border-radius: 1px;
+}
+/* ZOOM IS ALLOWED (2026-09-27 · the viewport no longer pins scale 1, which
+   locked out anyone who enlarges text). iOS zooms into any field under 16px
+   when it takes focus, so phone fields are 16px. Unlayered, so it wins over
+   the text-[12px] utilities on purpose. */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+/* the skip link · off screen until a keyboard lands on it */
+.rtn-skip {
+  position: fixed;
+  left: 12px;
+  top: -64px;
+  z-index: 200;
+  padding: 10px 14px;
+  background: var(--papaya);
+  color: var(--ink);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 12px;
+}
+.rtn-skip:focus {
+  top: 12px;
+}
+:where(button, [role="button"]):active {
+  transform: translateY(1px) scale(0.985);
+  transition: transform var(--dur-quick) var(--ease-gp);
+}
+@media (prefers-reduced-motion: reduce) {
+  .rtn-enter, .rtn-enter-slow { animation: none; }
+  :where(button, [role="button"]):active { transform: none; }
+}
+
+@keyframes rtn-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.8);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0) scale(1.08);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-14px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.96);
+  }
+}
+/* THE RIDE'S CALLS TO ACTION · a soft ring that breathes around the next
+   step (GO LIVE → pick a game), an arrow that nudges toward it, and an
+   entrance that SETTLES into place · rtn-pop is a toast and fades itself
+   away, which an alert that must stay on screen cannot do. All three sit
+   behind motion-safe: in the markup. */
+@keyframes rtn-beacon {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 122, 26, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(255, 122, 26, 0.28);
+  }
+}
+@keyframes rtn-nudge {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+}
+@keyframes rtn-settle {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes rtn-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes rtn-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* THE COCKPIT AS A PAGE (overhaul phase 2) · one shared width for every row —
+   the floating-era per-row caps centered narrow ovals inside a wide card and
+   read as "nothing lines up". Rows stretch; the pill-ovals square into the
+   rectangular 12px rhythm (the Stripe look). Portami content (dock, sheets)
+   is portaled to <body> and never inherits these. */
+.rtn-cockpit-page > div {
+  width: 100%;
+  max-width: 100% !important;
+}
+.rtn-cockpit-page [class*="rounded-full"] {
+  border-radius: 6px;
+}
+
+/* THE FLAG LAYER (Grand Prix) · livery ink for wordmarks and hero keywords —
+   solid papaya heat, no lavender drift: one team color, worn with pride. */
+.ink-grad {
+  background: linear-gradient(94deg, var(--papaya) 0%, var(--papaya-hot) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.tile-float {
+  box-shadow: 0 14px 42px rgba(0, 0, 0, 0.5);
+}
+
+/* the pit-wall panel border (replaces the gradient pill) · hard steel ring */
+.pill-grad {
+  border: 1px solid var(--steel);
+  background: var(--ink-soft);
+}
+
+/* ═══ GRAND PRIX SIGNATURES ═══ */
+
+/* the checkered strip — the flag over every page top and section divider */
+.checker {
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--bone) 0 12px,
+    var(--ink) 12px 24px
+  );
+}
+/* a FLAG · the chequered board at small sizes, where the stripes above read
+   as one white box (finish lines, the end of a lap track) */
+.flag {
+  background-color: var(--ink);
+  background-image: conic-gradient(var(--bone) 25%, transparent 0 50%, var(--bone) 0 75%, transparent 0);
+  background-size: 6px 6px;
+  box-shadow: inset 0 0 0 1px var(--steel);
+}
+.checker-lg {
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--bone) 0 18px,
+    var(--ink) 18px 36px
+  );
+}
+
+/* outline display text — the "ROAD." hero treatment */
+.gp-outline {
+  -webkit-text-stroke: 2px var(--bone);
+  color: transparent;
+}
+.gp-outline-thin {
+  -webkit-text-stroke: 1.5px var(--bone);
+  color: transparent;
+}
+
+/* ticket separators — the dashed tear-line between grid cartridges */
+.ticket-dash-r {
+  border-right: 2px dashed var(--hairline);
+}
+.ticket-dash-b {
+  border-bottom: 2px dashed var(--hairline);
+}
+
+/* the pit-wall scanline sweep (game cards, live monitors) */
+@keyframes gp-scan {
+  0% {
+    top: 0;
+  }
+  100% {
+    top: 100%;
+  }
+}
+.gp-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 40px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(245, 239, 226, 0.07), rgba(245, 239, 226, 0));
+  animation: gp-scan 4.6s linear infinite;
+}
+
+/* ═══ THE GLOSS PASS ═══
+   Motion and finish that read as "built", not "styled". Every effect here is
+   composited (transform/opacity only) so nothing costs a layout pass, and all
+   of it is silenced by the reduced-motion block above. */
+
+/* marker boards drifting like heat off the tarmac */
+@keyframes gp-drift {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-6deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(-5deg);
+  }
+}
+@keyframes gp-drift-slow {
+  0%,
+  100% {
+    transform: translateY(0) rotate(6deg);
+  }
+  50% {
+    transform: translateY(-9px) rotate(5deg);
+  }
+}
+.gp-drift {
+  animation: gp-drift 7s ease-in-out infinite;
+}
+.gp-drift-slow {
+  animation: gp-drift-slow 9s ease-in-out infinite;
+}
+
+/* THE PRECISION CONTROL · one button standard for the whole app, in-game too.
+   A machined edge: crisp 2px frame, an inner highlight that catches light on
+   the top edge, a real press, and a sheen that wipes across on hover. */
+.gp-btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    transform 0.12s cubic-bezier(0.2, 0, 0, 1),
+    box-shadow 0.18s ease,
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+.gp-btn::after {
+  /* the top-edge highlight — the tell that separates a real control from a div */
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 1px 0 rgba(245, 239, 226, 0.16);
+}
+.gp-btn::before {
+  /* the sheen wipe */
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -70%;
+  width: 55%;
+  pointer-events: none;
+  transform: skewX(-18deg);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(245, 239, 226, 0.14),
+    transparent
+  );
+  transition: left 0.55s cubic-bezier(0.2, 0, 0, 1);
+}
+.gp-btn:hover::before {
+  left: 130%;
+}
+.gp-btn:hover {
+  transform: translateY(-1px);
+}
+.gp-btn:active {
+  transform: translateY(0) scale(0.985);
+}
+.gp-btn:focus-visible {
+  outline: 2px solid var(--papaya);
+  outline-offset: 2px;
+}
+/* the primary call: papaya with a lift that reads as lit, not glowy */
+.gp-btn-primary {
+  box-shadow: 0 6px 22px rgba(255, 122, 26, 0.22);
+}
+.gp-btn-primary:hover {
+  box-shadow: 0 10px 30px rgba(255, 122, 26, 0.3);
+}
+
+/* live telemetry values tick over rather than snapping */
+@keyframes gp-tick {
+  0% {
+    opacity: 0.35;
+    transform: translateY(-2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.gp-tick {
+  animation: gp-tick 0.22s ease-out;
+}
+
+/* the armed pulse — a heartbeat on anything that is live and costing money */
+@keyframes gp-armed {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(39, 242, 164, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(39, 242, 164, 0);
+  }
+}
+.gp-armed {
+  animation: gp-armed 2.2s ease-out infinite;
+}
+
+/* section reveal on scroll — a short, confident rise (no bounce, no stagger soup) */
+@keyframes gp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.gp-rise {
+  animation: gp-rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* hairline sheen along the top of a panel, so flat surfaces still catch light */
+.gp-lit {
+  position: relative;
+}
+.gp-lit::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(245, 239, 226, 0.18) 22%,
+    rgba(245, 239, 226, 0.18) 78%,
+    transparent
+  );
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE GLOSS LAYER · material, depth and precision, applied at the PRIMITIVES.
+
+   Written after being asked, fairly, whether the app actually got the luxury
+   sleekness it was promised. It had not: it had a palette and a typeface and
+   flat rectangles. The difference between "styled" and "built" is material —
+   surfaces that catch light, edges that read as machined, motion that settles
+   rather than arrives, and numerals that behave like instruments.
+
+   Everything here hooks the primitives the app ALREADY uses (51 steel-bordered
+   panels, 38 .gp-btn controls), so the whole surface lifts at once instead of
+   drifting component by component. All selectors are :where() (zero
+   specificity) so any component can still override locally.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* MATERIAL · a steel-bordered panel is a machined face, not a div. A single
+   degree of top-light plus a hairline gives it a direction the eye reads as
+   solidity. Kept far below the threshold of looking "gradient-y". */
+:where([class*="border-steel"]) {
+  background-image: linear-gradient(
+    180deg,
+    rgba(245, 239, 226, 0.028),
+    rgba(245, 239, 226, 0) 38%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(245, 239, 226, 0.06),
+    0 1px 0 rgba(0, 0, 0, 0.35);
+}
+
+/* the checkered strip gets a real edge instead of ending in nothing */
+:where(.checker) {
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.45);
+}
+
+/* ELEVATION · three tiers, all tight and dark. Luxury reads as depth, never
+   as glow: a floating panel should look lifted, not lit up. */
+.gp-e1 {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.22);
+}
+.gp-e2 {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.45), 0 8px 24px rgba(0, 0, 0, 0.32);
+}
+.gp-e3 {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5), 0 18px 48px rgba(0, 0, 0, 0.44);
+}
+
+/* CONTROLS · the press must feel mechanical. A control that only changes
+   colour on click feels like a link; one that moves feels like a switch. */
+:where(.gp-btn) {
+  transition:
+    transform 0.1s cubic-bezier(0.2, 0, 0, 1),
+    box-shadow 0.18s ease,
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    color 0.18s ease;
+  will-change: transform;
+}
+:where(.gp-btn):active {
+  transform: translateY(1px) scale(0.994);
+}
+/* focus that looks designed rather than defaulted */
+:where(.gp-btn):focus-visible,
+:where(button, a, input, select):focus-visible {
+  outline: 2px solid var(--papaya);
+  outline-offset: 2px;
+  border-radius: 1px;
+}
+
+/* INSTRUMENT NUMERALS · tabular everywhere, with a slashed zero so a price
+   never reads ambiguously at a glance. This is the detail that separates a
+   trading surface from a website. */
+:where(.tabular-nums, .font-telemetry, .tnum) {
+  font-variant-numeric: tabular-nums slashed-zero;
+  font-feature-settings: "tnum" 1, "zero" 1;
+}
+
+/* TYPE · Unbounded is wide and geometric; at display sizes it wants slightly
+   negative tracking to stop looking spaced out, and crisper rendering. */
+:where(.display) {
+  text-rendering: geometricPrecision;
+}
+
+/* ENTRANCE · sections settle in rather than popping. One short rise, no
+   stagger soup, and completely silent under reduced-motion (handled above). */
+@keyframes gp-settle {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.gp-settle {
+  animation: gp-settle 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* CHROME · the small surfaces most apps forget */
+::-webkit-scrollbar-thumb {
+  background: var(--steel);
+  border-radius: 0;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--flat);
+}
+::selection {
+  background: color-mix(in srgb, var(--papaya) 34%, transparent);
+  color: var(--bone);
+}
+
+/* a hairline that catches light along the top of any lit panel · used by the
+   pit boards and the convoy HUD */
+:where(.gp-lit)::before {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(245, 239, 226, 0.22) 20%,
+    rgba(245, 239, 226, 0.22) 80%,
+    transparent
+  );
+}
+
+/* ── THE ONE NOTICE THAT MUST NOT BE MISSED ───────────────────────────────
+   "Stopped, but the venue would not confirm you are flat" means a real
+   position may still be open with real money on it. Everything else in this
+   app can be skimmed past; this cannot. A slow pulse on the border and a
+   held breath on the shadow — motion the eye catches from across a desk,
+   without the strobing that would make it hard to read or hostile to anyone
+   sensitive to flashing. Honoured only when the rider allows motion. */
+@keyframes rtn-alarm {
+  0%, 100% { border-color: var(--blood); box-shadow: 0 0 0 0 rgba(255, 77, 94, 0.45), 0 24px 48px rgba(0,0,0,0.6); }
+  50%      { border-color: #ff8a8a;      box-shadow: 0 0 0 10px rgba(255, 77, 94, 0), 0 24px 48px rgba(0,0,0,0.6); }
+}
+.rtn-alarm { animation: rtn-alarm 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  /* no pulse, but keep it visually loudest on the screen */
+  .rtn-alarm { animation: none; box-shadow: 0 0 0 3px rgba(255, 77, 94, 0.5), 0 24px 48px rgba(0,0,0,0.6); }
+}
+
+/* ── SKELETON · a shape the answer will fill, shimmering while it loads.
+   Every venue read takes a second or two; a blank panel reads as "broken",
+   a skeleton reads as "on its way". Still under reduced motion. */
+.skel {
+  position: relative;
+  overflow: hidden;
+  background: var(--ink-soft);
+  border: 2px solid var(--steel);
+}
+.skel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(245, 239, 226, 0.06), transparent);
+  animation: skel-sweep 1.3s ease-in-out infinite;
+}
+@keyframes skel-sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skel::after {
+    animation: none;
+  }
+}
