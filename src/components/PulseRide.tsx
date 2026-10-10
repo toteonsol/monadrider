@@ -266,7 +266,7 @@ export default function PulseRide({
       color: 0x101418,
       roughness: 0.35,
       metalness: 0.6,
-      emissive: 0xff7a1a,
+      emissive: 0x8a74ff,
       emissiveIntensity: 0.9,
     });
     // A real craft, not a cone: fuselage + canopy + swept wings + twin

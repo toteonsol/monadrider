@@ -2221,7 +2221,7 @@ export default function ThreeRide({
       g.fillStyle = "rgba(245,239,226,0.85)";
       g.fillText("ride the now · monad", 1008, 30);
       g.font = "700 26px Archivo, system-ui, sans-serif";
-      g.fillStyle = "rgba(255,122,26,0.9)";
+      g.fillStyle = "rgba(138,116,255,0.9)";
       g.fillText(code ? `ride with ${code}` : "drive the market · farm every road", 1008, 68);
       const tex = new THREE.CanvasTexture(c);
       const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
@@ -2501,7 +2501,7 @@ export default function ThreeRide({
         new THREE.TorusGeometry(4.6, 0.2, 10, 40),
         new THREE.MeshStandardMaterial({
           color: 0x2a1204,
-          emissive: hot ? 0xff7a1a : 0x6ab8ff,
+          emissive: hot ? 0x8a74ff : 0x6ab8ff,
           emissiveIntensity: 2.6,
         }));
       ring.position.y = 4.2;
@@ -2509,7 +2509,7 @@ export default function ThreeRide({
       const veil = new THREE.Mesh(
         new THREE.CircleGeometry(4.4, 40),
         new THREE.MeshBasicMaterial({
-          color: hot ? 0xff7a1a : 0x6ab8ff,
+          color: hot ? 0x8a74ff : 0x6ab8ff,
           transparent: true,
           opacity: 0.07,
           side: THREE.DoubleSide,
@@ -3502,7 +3502,7 @@ export default function ThreeRide({
             portalStreak > 1
               ? `🌀 REGIME CHAIN ×${portalStreak} +$${portalPay}`
               : `🌀 REGIME CROSSED +$${portalPay}`,
-            "#ff7a1a");
+            "#8a74ff");
           if (portalStreak > 1) {
             bumpCombo(0.5);
             hlRef.current?.highlight(`regime-chain-x${portalStreak}`);

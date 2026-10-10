@@ -85,6 +85,24 @@ export function Game() {
       localStorage.setItem("rtn-monad-intro", "1");
     } catch {}
   };
+  // the worlds' own "go live right here" / "stop" buttons
+  useEffect(() => {
+    const armReq = () => {
+      if (bridge.armed) return;
+      if (bridge.canArm) void bridge.arm();
+      else {
+        setWorld(null);
+        go("trade");
+      }
+    };
+    const disarmReq = () => void bridge.disarm();
+    window.addEventListener("rtn-arm-request", armReq);
+    window.addEventListener("rtn-disarm-request", disarmReq);
+    return () => {
+      window.removeEventListener("rtn-arm-request", armReq);
+      window.removeEventListener("rtn-disarm-request", disarmReq);
+    };
+  }, [bridge, go]);
   const exitWorld = () => {
     setWorld(null);
     if (bridge.armed) void bridge.disarm();

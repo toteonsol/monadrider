@@ -380,13 +380,13 @@ export default function SurfRide({
     const surfer = new THREE.Group();
     const board = new THREE.Mesh(
       new THREE.BoxGeometry(0.55, 0.1, 2.3),
-      new THREE.MeshStandardMaterial({ color: 0x101418, roughness: 0.4, metalness: 0.5, emissive: 0xff7a1a, emissiveIntensity: 0.55 }));
+      new THREE.MeshStandardMaterial({ color: 0x101418, roughness: 0.4, metalness: 0.5, emissive: 0x8a74ff, emissiveIntensity: 0.55 }));
     surfer.add(board);
     // real board (CC0) swaps under the rider when loaded · procedural fallback
     void loadGlb("/models/board.glb")
       .then((m) => {
         fitTo(m, 2.4, "z");
-        tintAll(m, 0xff7a1a, 0.5);
+        tintAll(m, 0x8a74ff, 0.5);
         board.visible = false;
         surfer.add(m);
       })
