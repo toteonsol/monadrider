@@ -7,7 +7,7 @@
 
 ## Short description
 
-A mobile-first trading game on Monad. The live Perpl price is a wave: ride the crest to go long, drop to the trough to go short. Every carve is a real, capped perp order sent from a passkey wallet (Mera) to Perpl's Exchange contract, margined in AUSD. Bank the ride as spot MON on Kuru.
+A racing, surfing and rhythm game on Monad (three 3D worlds: RIDE, SURFER, PULSE) where every lane you hold is a real, capped perp order sent from a passkey wallet (Mera) straight to Perpl's Exchange contract, margined in AUSD. The worlds' weather is Perpl's live order book; Passenger is the hands-off bot; spot MON on Kuru banks the ride; a Paddock leaderboard counts live rides only after verifying their Monad txs.
 
 ## Core features
 
@@ -16,7 +16,9 @@ A mobile-first trading game on Monad. The live Perpl price is a wave: ride the c
 - **Perpl, directly onchain:** every carve is an `Exchange.execOrder` IOC transaction from the user's wallet. Fills are read back from contract state, and every fill links to MonadScan.
 - **Passenger:** an automation bot on Perpl (trend + live order-flow signal, hysteresis, minimum hold) inside hard risk rails (clip cap, stop, max loss, timer, throttle, flatten on every exit), ending with a P&L and risk receipt.
 - **Kuru spot lane:** MON ↔ AUSD through Kuru Flow on Kuru's order books.
-- **PWA:** installable, with thumb-zone controls on phones and a rail with the live Monad tape on desktop.
+- **Three 3D worlds, one engine:** RIDE, SURFER and PULSE read Perpl's live order flow on Monad and steer the same live engine.
+- **The Paddock:** next-move ladder for newcomers, daily set and streaks, standings verified onchain, 9 languages.
+- **PWA:** installable, with a bottom tab bar and launch button on phones and a rail on desktop.
 
 ## Why Monad
 
