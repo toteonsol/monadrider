@@ -7,7 +7,7 @@ A racing, surfing and rhythm game where every lane you hold is a real, capped pe
 - **Track:** Onchain Finance & Trading
 - **Bounties:** Agora (best mobile trading app), Kuru (consumer trading app), Perpl (best use of Perpl's API / automation)
 - **Licence:** AGPL-3.0
-- **Live app:** _added at submission_ · **Demo video:** _added at submission_
+- **Live app:** https://ride-the-now-monad.vercel.app · **Demo video:** _added at submission_
 
 ---
 
@@ -124,7 +124,7 @@ pnpm verify:onchain   # simulates an open + close execOrder from a real Perpl ac
 ### Deploy
 
 - **App:** any Next.js host (Vercel). Set the env vars above.
-- **Relay:** `relay/server.mjs` is a stateless Node socket pipe. `railway.json` runs it on Railway; set `ALLOWED_ORIGINS` to the app's origin. The same process serves the Paddock API (`/api/*`); set `GAME_DATA` to a persistent path. A Cloudflare Worker relay is in `workers/perpl-relay` (pre-existing, see below).
+- **Relay:** `relay/` is its own tiny package (only dependency: `ws`). Deploy that folder on Railway (`cd relay && railway up`); `relay/railway.json` runs one replica with a 96 MB heap. Set `ALLOWED_ORIGINS` to the app's origin and mount a volume at `/data`. The same process serves the Paddock API (`/api/*`); set `GAME_DATA` to a persistent path. A Cloudflare Worker relay is in `workers/perpl-relay` (pre-existing, see below).
 
 ---
 
