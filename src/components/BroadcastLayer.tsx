@@ -57,7 +57,7 @@ export function CastLowerThird({ cast }: { cast: string | null }) {
     <div className="pointer-events-none absolute inset-x-0 bottom-[16%] z-20 flex justify-center px-4">
       <div className="animate-[rtn-pop_0.4s_ease-out] max-w-[92vw] border-l-4 border-papaya bg-ink/85 px-5 py-3 backdrop-blur-md min-[640px]:max-w-[720px]">
         <div className="display text-[9px] font-black uppercase tracking-[0.3em] text-papaya">
-          hyperider · live tape
+          ride the now · live tape
         </div>
         <div className="mt-0.5 text-[15px] font-bold leading-snug text-bone min-[640px]:text-[20px]">
           {cast}

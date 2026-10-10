@@ -19,7 +19,7 @@ import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 import GameIcon from "./brand/GameIcon";
 import { riderAlias } from "@/lib/game/riderName";
 import Icon from "./brand/Icon";
-import { LiveFeed } from "@/lib/game/liveFeed";
+import { LiveFeed, getRideAsset } from "@/lib/game/liveFeed";
 import { loadGlb, loadGlbWithClips, fitTo, tintBody, tintAll } from "@/lib/game/glb";
 import { loadSky, type SkyName } from "@/lib/game/sky";
 import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
@@ -823,7 +823,7 @@ export default function ThreeRide({
             ] as [string, string][])
           : []),
       ],
-      mode: "TURBO 3D · live ETH market",
+      mode: `TURBO 3D · live ${getRideAsset()} on Perpl`,
       live: armed && real.fills > 0,
     });
 
@@ -2219,7 +2219,7 @@ export default function ThreeRide({
       g.textBaseline = "middle";
       g.font = "700 34px Archivo, system-ui, sans-serif";
       g.fillStyle = "rgba(245,239,226,0.85)";
-      g.fillText("hyperider.airdropsea.app", 1008, 30);
+      g.fillText("ride the now · monad", 1008, 30);
       g.font = "700 26px Archivo, system-ui, sans-serif";
       g.fillStyle = "rgba(255,122,26,0.9)";
       g.fillText(code ? `ride with ${code}` : "drive the market · farm every road", 1008, 68);
@@ -3968,7 +3968,7 @@ export default function ThreeRide({
         <div className="pointer-events-none absolute inset-x-0 bottom-[16%] z-20 flex justify-center px-4">
           <div className="animate-[rtn-pop_0.4s_ease-out] max-w-[92vw] border-l-4 border-papaya bg-ink/85 px-5 py-3 backdrop-blur-md min-[640px]:max-w-[720px]">
             <div className="display text-[9px] font-black uppercase tracking-[0.3em] text-papaya">
-              hyperider · live tape
+              ride the now · live tape
             </div>
             <div className="mt-0.5 text-[15px] font-bold leading-snug text-bone min-[640px]:text-[20px]">
               {cast}
@@ -4084,20 +4084,16 @@ export default function ThreeRide({
           <GameIcon name="pause" /> <span className="sm:hidden">pause (safe)</span>
         </button>
         <a
-          href="https://airdropsea.app"
-          target="_blank"
-          rel="noreferrer"
+          href="/about"
           className="gp-btn display flex w-full items-center gap-2 px-2.5 py-2 text-left text-[11px] font-bold uppercase tracking-wide text-bone hover:bg-ink sm:w-auto sm:border-2 sm:border-steel sm:bg-ink/80 sm:px-3 sm:py-1.5"
-          title="Support & airdrop intel · airdropsea.app"
+          title="How it works · Perpl + Kuru on Monad"
         >
           <GameIcon name="support" /> <span className="sm:hidden">support</span>
         </a>
         <a
-          href="https://www.airdropsea.app/guides/hyperider-perp-dex-volume-game"
-          target="_blank"
-          rel="noreferrer"
+          href="/about"
           className="gp-btn display flex w-full items-center gap-2 px-2.5 py-2 text-left text-[11px] font-bold uppercase tracking-wide text-bone hover:bg-ink sm:w-auto sm:border-2 sm:border-steel sm:bg-ink/80 sm:px-3 sm:py-1.5"
-          title="how Hyperider works · the full guide"
+          title="how Ride the Now works on Monad"
         >
           <GameIcon name="guide" /> <span className="sm:hidden">guide</span>
         </a>
@@ -4240,18 +4236,6 @@ export default function ThreeRide({
                 <b className="text-chart">That was practice · none of it counted.</b> Connect your
                 wallet and the same riding farms <b>real DEX volume</b> toward airdrops: trades stay
                 tiny, capped &amp; auto-closed. Tap <b>CONNECT WALLET</b> up top.
-                <div className="mt-1.5 text-[11px] text-flat">
-                  not ready? get airdrop intel, alerts &amp; support on{" "}
-                  <a
-                    href="https://airdropsea.app"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-sky underline"
-                  >
-                    airdropsea.app ↗
-                  </a>{" "}
-                  · start there, ride later
-                </div>
               </div>
             )}
             {pct != null && (
@@ -4300,26 +4284,14 @@ export default function ThreeRide({
                   get left behind
                 </span>
               )}
-              <a
-                href="https://airdropsea.app"
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-full border border-hairline px-2 py-0.5 text-flat underline"
-              >
-                support &amp; airdrop intel
+              <a href="/about" className="rounded-full border border-hairline px-2 py-0.5 text-flat underline">
+                how it works on Monad
               </a>
             </div>
             <p className="mt-2 text-[10.5px] leading-snug text-flat-dim">
               alpha · evolving fast · real trades are small &amp; capped, auto-flattened ·
               volume farming, not a profit machine · support &amp; suggestions:{" "}
-              <a
-                href="https://airdropsea.app"
-                target="_blank"
-                rel="noreferrer"
-                className="underline"
-              >
-                airdropsea.app
-              </a>
+              <a href="/about" className="underline">how it works</a>
             </p>
             {/* ═══ THE DOOR · a practice lap that never offers the real thing
                 is a demo. This is the one moment the driver has just proven the
@@ -4331,8 +4303,8 @@ export default function ThreeRide({
                 </div>
                 <p className="mt-1.5 text-[12.5px] leading-snug text-bone">
                   Same drive, live: those{" "}
-                  <b>${over.sim.volume.toLocaleString()}</b> become real farmed volume on the venue
-                  you pick, earning that venue&apos;s airdrop points and Hyperider points at once.
+                  <b>${over.sim.volume.toLocaleString()}</b> become real volume on Perpl
+                  you pick, each lane a Perpl order on Monad, earning Ride the Now points on the board.
                   Trades stay tiny, capped and auto-closed.
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -4374,7 +4346,7 @@ export default function ThreeRide({
                           ] as [string, string][])
                         : []),
                     ],
-                    mode: "TURBO 3D · live ETH market",
+                    mode: `TURBO 3D · live ${getRideAsset()} on Perpl`,
                     live: over.live,
                   })
                 }

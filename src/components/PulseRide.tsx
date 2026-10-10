@@ -25,7 +25,7 @@ import * as THREE from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
-import { LiveFeed } from "@/lib/game/liveFeed";
+import { LiveFeed, getRideAsset } from "@/lib/game/liveFeed";
 import { loadGlb, fitTo, tintAll } from "@/lib/game/glb";
 import { sfx, isMuted } from "@/lib/game/sfx";
 import { saveRide, coachTip, career, type RideRecord } from "@/lib/game/rideLog";

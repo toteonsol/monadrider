@@ -14,7 +14,7 @@ export default function Logomark({ size = 28, className = "" }: { size?: number;
       fill="none"
       className={className}
       role="img"
-      aria-label="Hyperider"
+      aria-label="Ride the Now"
     >
       {/* speedo arc (270°, open at bottom-right like a redline) */}
       <path

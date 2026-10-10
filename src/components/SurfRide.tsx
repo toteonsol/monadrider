@@ -28,7 +28,7 @@ import * as THREE from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
-import { LiveFeed } from "@/lib/game/liveFeed";
+import { LiveFeed, getRideAsset } from "@/lib/game/liveFeed";
 import { sfx, isMuted } from "@/lib/game/sfx";
 import { saveRide, coachTip, career, type RideRecord } from "@/lib/game/rideLog";
 import { aiCoach } from "@/lib/game/aiCoach";
@@ -1355,7 +1355,7 @@ export default function SurfRide({
           )}
         </span>
         <span className={`rounded-sm px-2 py-0.5 text-[12px] font-bold ${hud.flow >= 0 ? "bg-chart/20 text-chart" : "bg-blood/20 text-blood"}`}>
-          {hud.flow >= 0 ? "▲ buyers pushing" : "▼ sellers pushing"} · live ETH swell
+          {hud.flow >= 0 ? "▲ buyers pushing" : "▼ sellers pushing"} · live {getRideAsset()} swell
         </span>
         <span className="rounded-sm bg-ink/70 px-2 py-0.5 text-[11.5px] font-bold uppercase tracking-[0.12em] text-flat">
           NIGHT SWELL · SURFER
@@ -1450,7 +1450,7 @@ export default function SurfRide({
           <div className="w-full max-w-[400px] rounded-xl border border-hairline bg-ink-soft p-5 text-center">
             <div className="text-lg font-extrabold text-bone">The wave is the market.</div>
             <div className="mt-1 text-[12px] leading-snug text-flat">
-              That swell is the <b className="text-bone">live ETH chart</b> rolling at you. Your
+              That swell is the <b className="text-bone">live {getRideAsset()} chart on Perpl</b> rolling at you. Your
               height on the face is your position:
             </div>
             <div className="mx-auto mt-3 flex justify-center gap-2">

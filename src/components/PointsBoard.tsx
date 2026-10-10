@@ -64,7 +64,7 @@ export default function PointsBoard({
             The championship
           </h2>
           <p className="mt-1 max-w-[640px] text-[12.5px] leading-snug text-flat">
-            Every ride earns <b className="text-bone">Hyperider points</b> on top of whatever the
+            Every ride earns <b className="text-bone">Ride the Now points</b> on top of whatever the
             venue&apos;s own airdrop pays you. One drive, two ledgers, and the points are the part
             that is yours across every road you ride.
           </p>
@@ -89,7 +89,7 @@ export default function PointsBoard({
                 ["1 point", "per $1 of REAL volume farmed", "text-chart"],
                 [`capped ${PRACTICE_CAP}`, "per practice ride, so free play can never top the board", "text-flat"],
                 ["up to +50%", "skill multiplier from dodges and streaks", "text-amber"],
-                ["+10% each", "per convoy mate riding live with you, up to +50%", "text-sky"],
+                ["onchain", "live rides count once their Monad txs verify", "text-sky"],
               ] as const
             ).map(([big, small, tone]) => (
               <div key={big} className="border border-steel bg-ink px-3 py-2.5">
