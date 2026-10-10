@@ -83,6 +83,19 @@ export function SpotScreen() {
 
   const px = q ? (side === "buy" ? n / q.out : q.out / n) : 0;
 
+  // logged-out preview: a live Kuru price so the screen is never empty
+  const [preview, setPreview] = useState<number | null>(null);
+  useEffect(() => {
+    if (mera.address) return;
+    let dead = false;
+    quote("0x000000000000000000000000000000000000dEaD", "AUSD", "MON", 10)
+      .then((r) => !dead && setPreview(10 / r.out))
+      .catch(() => {});
+    return () => {
+      dead = true;
+    };
+  }, [mera.address]);
+
   return (
     <div className="mx-auto w-full max-w-lg space-y-4 px-4 py-4">
       <section className="card px-5 py-5">
@@ -104,7 +117,12 @@ export function SpotScreen() {
         </div>
 
         {!mera.address ? (
-          <div className="mt-4">
+          <div className="mt-4 space-y-3">
+            <div className="rounded-xl border border-line bg-ink-3 px-3 py-3">
+              <div className="text-xs text-mute">Live on Kuru · 10 AUSD buys</div>
+              <div className="num mt-1 text-2xl font-semibold">{preview ? `${qty(10 / preview, 1)} MON` : "…"}</div>
+              {preview && <div className="num text-[11px] text-mute">{preview.toFixed(5)} AUSD per MON</div>}
+            </div>
             <LoginCard compact />
           </div>
         ) : (

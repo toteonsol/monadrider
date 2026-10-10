@@ -13,7 +13,7 @@ import { DEFAULT_RAILS, RAIL_LIMITS, type Band, type Rails } from "@/lib/ride/en
 import { OnchainExecutor } from "@/lib/ride/onchainExecutor";
 import { useMera, publicClient } from "@/lib/wallet/mera";
 import { usePerplAccount } from "@/lib/perpl/usePerplAccount";
-import { readPosition } from "@/lib/perpl/onchain";
+import { readPosition, withdrawAusd } from "@/lib/perpl/onchain";
 import { WaveCanvas } from "./WaveCanvas";
 import { ReceiptSheet } from "./ReceiptSheet";
 import { LiveTape } from "./LiveTape";
@@ -232,7 +232,23 @@ export function RideScreen({
         <LiveTape tape={feed.tape} asset={asset} />
       </aside>
 
-      {ride.receipt && <ReceiptSheet receipt={ride.receipt} onClose={ride.dismiss} onSpot={goSpot} />}
+      {ride.receipt && (
+        <ReceiptSheet
+          receipt={ride.receipt}
+          onClose={ride.dismiss}
+          onSpot={goSpot}
+          onSweep={
+            mera.wallet
+              ? async (amount) => {
+                  const r = await withdrawAusd(publicClient, mera.wallet!, amount);
+                  void mera.refresh();
+                  void perpl.refresh();
+                  return r.hash;
+                }
+              : undefined
+          }
+        />
+      )}
     </div>
   );
 }

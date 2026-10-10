@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import type { Receipt } from "@/lib/ride/receipts";
 import { signedUsd, usd, price, clock } from "@/lib/fmt";
 import { TxLink } from "./TxLink";
@@ -13,8 +14,20 @@ const REASON: Record<string, string> = {
 const ACTION: Record<string, string> = { "open-long": "Long", "open-short": "Short", close: "Close" };
 
 /** The end-of-ride receipt: result, risk, and every fill with its Monad tx. */
-export function ReceiptSheet({ receipt: r, onClose, onSpot }: { receipt: Receipt; onClose: () => void; onSpot?: () => void }) {
+export function ReceiptSheet({
+  receipt: r,
+  onClose,
+  onSpot,
+  onSweep,
+}: {
+  receipt: Receipt;
+  onClose: () => void;
+  onSpot?: () => void;
+  /** live rides: move the winnings from Perpl margin back to the wallet as AUSD */
+  onSweep?: (usd: number) => Promise<string>;
+}) {
   const live = r.mode === "live";
+  const [sweep, setSweep] = useState<{ busy: boolean; hash?: string; err?: string }>({ busy: false });
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center" onClick={onClose}>
       <div
@@ -60,6 +73,33 @@ export function ReceiptSheet({ receipt: r, onClose, onSpot }: { receipt: Receipt
             ))}
           </div>
         </div>
+
+        {live && onSweep && r.net >= 0.01 && (
+          <div className="mt-5 rounded-xl border border-cyan/30 bg-cyan/5 px-4 py-3">
+            {sweep.hash ? (
+              <div className="flex items-center justify-between text-sm">
+                <span>Winnings are in your wallet as AUSD</span>
+                <TxLink hash={sweep.hash} />
+              </div>
+            ) : (
+              <button
+                className="btn w-full bg-cyan text-ink"
+                disabled={sweep.busy}
+                onClick={async () => {
+                  setSweep({ busy: true });
+                  try {
+                    setSweep({ busy: false, hash: await onSweep(Math.floor(r.net * 100) / 100) });
+                  } catch (e) {
+                    setSweep({ busy: false, err: e instanceof Error ? e.message.split("\n")[0] : String(e) });
+                  }
+                }}
+              >
+                {sweep.busy ? "Sending…" : `Send ${usd(Math.floor(r.net * 100) / 100)} winnings to my wallet`}
+              </button>
+            )}
+            {sweep.err && <p className="mt-2 text-xs text-pink">{sweep.err}</p>}
+          </div>
+        )}
 
         <div className="mt-5 grid grid-cols-2 gap-2">
           {onSpot && (
