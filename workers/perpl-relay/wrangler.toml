@@ -1,0 +1,5 @@
+name = "perpl-relay"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+
+# No KV, no secrets, no state — this is a stateless WebSocket byte-pipe.
