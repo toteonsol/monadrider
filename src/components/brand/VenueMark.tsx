@@ -10,7 +10,17 @@ import type { VenueId } from "@/lib/game/venues";
 // and only its glyph got added.
 export type { VenueId };
 
-const PATHS: Record<VenueId, React.ReactNode> = {
+// keyed by string: the glyph library keeps every road's mark, the Monad edition
+// registry names only the ones it rides
+const PATHS: Record<string, React.ReactNode> = {
+  // stacked book levels, an order book on Monad
+  kuru: (
+    <>
+      <path d="M5 7h14" />
+      <path d="M7 12h10" />
+      <path d="M9 17h6" />
+    </>
+  ),
   // fast forward chevrons, deep, liquid speed
   hyperliquid: (
     <>

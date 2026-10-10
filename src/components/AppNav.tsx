@@ -1,7 +1,8 @@
 "use client";
 
 /**
- * AppNav · five plain-word destinations, one job each.
+ * AppNav · five plain-word destinations, one job each (Monad edition:
+ * Play, Trade on Perpl, Spot on Kuru, Money, You).
  *
  *   PLAY   · the games (free practice, the daily set)
  *   TRADE  · the cockpit, plus the hedged desk and All Roads underneath it
@@ -30,8 +31,8 @@ import AnimatedNumber from "./AnimatedNumber";
 import LanguagePicker from "./LanguagePicker";
 import { useT } from "@/lib/i18n";
 
-export type AppTab = "home" | "trade" | "money" | "you";
-type MoneyLens = "positions" | "balances" | "history" | "airdrops";
+export type AppTab = "home" | "trade" | "spot" | "money" | "you";
+type MoneyLens = "wallet" | "history";
 type YouLens = "profile" | "standings";
 
 export default function AppNav({
@@ -44,8 +45,7 @@ export default function AppNav({
   onGarage,
   onMoney,
   onYou,
-  onConvoy,
-  onDesk,
+  onSpot,
 }: {
   tab: AppTab;
   /** the guide + support links in the rail's footer · off when embedded */
@@ -58,8 +58,7 @@ export default function AppNav({
   onGarage: () => void;
   onMoney: (lens: MoneyLens) => void;
   onYou: (lens: YouLens) => void;
-  onConvoy?: () => void;
-  onDesk?: () => void;
+  onSpot: () => void;
 }) {
   const reduce = useReducedMotion();
   const tr = useT();
@@ -108,7 +107,7 @@ export default function AppNav({
       <div className="flex min-h-[44px] items-center gap-2.5 px-2 lg:mb-6 lg:mt-2">
         <Logomark size={28} />
         <span className="display hidden text-[15px] font-black tracking-tight text-bone min-[420px]:inline lg:inline">
-          HYPERIDER <span className="text-papaya">GP</span>
+          RIDE THE NOW <span className="text-papaya">MONAD</span>
         </span>
       </div>
       <div className="flex flex-1 items-center justify-end gap-2 lg:flex-none lg:flex-col lg:items-stretch lg:justify-start lg:gap-0.5">
@@ -117,7 +116,7 @@ export default function AppNav({
         <button
           className="gp-btn display hidden items-center justify-between gap-2 border-2 border-papaya bg-papaya/10 px-3 py-2 text-[12px] font-black uppercase tracking-wide text-papaya hover:bg-papaya hover:text-ink lg:mb-3 lg:flex"
           onClick={() => window.dispatchEvent(new Event("rtn-quick-launch"))}
-          title={tr("a ride on one road or many, or a desk event, in seconds")}
+          title={tr("pick a world and ride, practice or live, in seconds")}
         >
           <span>⚡ {tr("Quick launch")}</span>
           <kbd className="font-telemetry text-[10px] font-bold opacity-70">⌘K</kbd>
@@ -129,45 +128,33 @@ export default function AppNav({
         </button>
 
         {/* TRADE · the cockpit, with the two advanced ways to trade under it */}
-        <button className={item(tab === "trade")} {...(tab === "trade" ? { "aria-current": "page" as const } : {})} onClick={onTrade} title={tr("pick a road, pick an asset, size it, go live")}>
+        <button className={item(tab === "trade")} {...(tab === "trade" ? { "aria-current": "page" as const } : {})} onClick={onTrade} title={tr("the Perpl cockpit · market, size, rails, go live")}>
           {here(tab === "trade")}
           <Icon name="flag" size={17} className="text-papaya" /> <span>{tr("Trade")}</span>
         </button>
-        {onDesk && (
-          <button className={sub} onClick={onDesk} title={tr("long one venue, short another · the market's direction can't hurt you")}>
-            <Icon name="scale" size={13} className="text-flat" /> <span>{tr("Hedged desk")}</span>
-          </button>
-        )}
-        {onConvoy && (
-          <button className={sub} onClick={onConvoy} title={tr("one drive mirrored across every road you've unlocked")}>
-            <Icon name="allroads" size={13} className="text-flat" /> <span>{tr("All roads")}</span>
-          </button>
-        )}
+        <button className={item(tab === "spot")} {...(tab === "spot" ? { "aria-current": "page" as const } : {})} onClick={onSpot} title={tr("buy or sell MON with AUSD on Kuru's order book")}>
+          {here(tab === "spot")}
+          <Icon name="scale" size={17} className="text-papaya" /> <span>{tr("Spot")}</span>
+        </button>
 
         {/* MONEY · what you hold, what you have, what it cost, what it pays */}
-        <button className={item(tab === "money")} {...(tab === "money" ? { "aria-current": "page" as const } : {})} onClick={() => onMoney("positions")} title={tr("every open position, balance and receipt across all your roads")}>
+        <button className={item(tab === "money")} {...(tab === "money" ? { "aria-current": "page" as const } : {})} onClick={() => onMoney("wallet")} title={tr("your passkey wallet, AUSD, Perpl margin and every receipt")}>
           {here(tab === "money")}
           <Icon name="wallet" size={17} className="text-papaya" /> <span>{tr("Money")}</span>
         </button>
         {tab === "money" && (
           <>
-        <button className={subCls(tab === "money" && moneyLens === "positions")} {...(tab === "money" && moneyLens === "positions" ? { "aria-current": "page" as const } : {})} onClick={() => onMoney("positions")} title={tr("every open position on every road and wallet")}>
-          <Icon name="scale" size={13} /> <span>{tr("Positions")}</span>
+        <button className={subCls(moneyLens === "wallet")} onClick={() => onMoney("wallet")} title={tr("passkey wallet, AUSD and Perpl margin")}>
+          <Icon name="wallet" size={13} /> <span>{tr("Wallet")}</span>
         </button>
-        <button className={subCls(tab === "money" && moneyLens === "balances")} {...(tab === "money" && moneyLens === "balances" ? { "aria-current": "page" as const } : {})} onClick={() => onMoney("balances")} title={tr("what each road holds for you")}>
-          <Icon name="wallet" size={13} /> <span>{tr("Balances")}</span>
-        </button>
-        <button className={subCls(tab === "money" && moneyLens === "history")} {...(tab === "money" && moneyLens === "history" ? { "aria-current": "page" as const } : {})} onClick={() => onMoney("history")} title={tr("every run, every receipt, what it cost and what it earned")}>
+        <button className={subCls(moneyLens === "history")} onClick={() => onMoney("history")} title={tr("every run, every receipt, every Monad tx")}>
           <Icon name="flag" size={13} /> <span>{tr("History")}</span>
-        </button>
-        <button className={subCls(tab === "money" && moneyLens === "airdrops")} {...(tab === "money" && moneyLens === "airdrops" ? { "aria-current": "page" as const } : {})} onClick={() => onMoney("airdrops")} title={tr("every live airdrop and what your rides farm")}>
-          <Icon name="airdrop" size={13} /> <span>{tr("Airdrops")}</span>
         </button>
           </>
         )}
 
         {/* LEARN */}
-        <a className={item()} href="/learn" title={tr("everything that powers the drive · the research floor, live studies, the measured map, evidence")}>
+        <a className={item()} href="/about" title={tr("how it works · why Monad · for partners")}>
           <Icon name="lab" size={17} className="text-papaya" /> <span>{tr("Learn")}</span>
         </a>
         {/* every public page (The Wire, Studies, Discoveries, Evidence,
@@ -189,9 +176,6 @@ export default function AppNav({
             <button className={subCls(youLens === "standings")} {...(tab === "you" && youLens === "standings" ? { "aria-current": "page" as const } : {})} onClick={() => onYou("standings")} title={tr("the standings · points, volume, rides")}>
               <Icon name="globe" size={13} /> <span>{tr("Standings")}</span>
             </button>
-            <button className={sub} onClick={onGarage} title={tr("your roads and wallets · unlock a venue, check a key")}>
-              <Icon name="shop" size={13} /> <span>{tr("Roads & wallets")}</span>
-            </button>
           </>
         )}
       </div>
@@ -200,33 +184,31 @@ export default function AppNav({
         <button
           onClick={() => onYou("standings")}
           className="gp-btn hidden lg:mt-auto lg:mb-3 lg:flex lg:w-full lg:items-center lg:justify-between lg:border-2 lg:border-steel lg:bg-ink-soft lg:px-3 lg:py-2.5"
-          title={tr("your Hyperider points · tap for the standings")}
+          title={tr("your points · tap for the standings")}
         >
           <span className="display text-[9.5px] font-bold uppercase tracking-[0.14em] text-flat">{tr("points")}</span>
           <AnimatedNumber value={pts} format={(v) => Math.round(v).toLocaleString()} className="display text-[15px] font-black text-amber" />
         </button>
       )}
       <div className="hidden lg:block lg:px-2 lg:text-[12px] lg:leading-snug lg:text-flat-dim">
-        <span className="font-bold text-flat">{tr("The honest terminal.")}</span> {tr("Tiny capped trades · auto-closed · you can't blow up.")}
+        <span className="font-bold text-flat">{tr("The honest terminal.")}</span> {tr("Tiny capped trades · auto-closed · you can't blow up.")} Perpl + Kuru on Monad.
       </div>
       {showHelp && (
         <div className="hidden lg:mt-3 lg:flex lg:gap-1.5 lg:px-1">
           <a
-            href="https://www.airdropsea.app/guides/hyperider-perp-dex-volume-game"
-            target="_blank"
-            rel="noreferrer"
+            href="/about"
             className="display flex min-h-[32px] flex-1 items-center justify-center gap-1.5 border border-steel text-[11px] font-bold uppercase tracking-wide text-flat transition hover:border-sky hover:text-sky"
           >
             <Icon name="lab" size={13} /> {tr("Guide")}
           </a>
           <a
-            href="https://airdropsea.app"
+            href="https://github.com/"
             target="_blank"
             rel="noreferrer"
             className="display flex min-h-[32px] flex-1 items-center justify-center gap-1.5 border border-steel text-[11px] font-bold uppercase tracking-wide text-flat transition hover:border-chart hover:text-chart"
-            title={tr("support, suggestions and airdrop intel")}
+            title={tr("the source code · AGPL-3.0")}
           >
-            <Icon name="spark" size={13} /> {tr("Support")}
+            <Icon name="spark" size={13} /> {tr("Code")}
           </a>
         </div>
       )}
@@ -245,12 +227,14 @@ export function MobileTabs({
   onTrade,
   onMoney,
   onYou,
+  onSpot,
 }: {
   tab: AppTab;
   onHome: () => void;
   onTrade: () => void;
   onMoney: () => void;
   onYou: () => void;
+  onSpot: () => void;
 }) {
   const reduce = useReducedMotion();
   const tr = useT();
@@ -286,7 +270,7 @@ export function MobileTabs({
         onClick={() => window.dispatchEvent(new Event("rtn-quick-launch"))}
         aria-label={tr("Quick launch")}
       >
-        <span className="grid h-11 w-11 place-items-center border-2 border-papaya bg-ink text-[20px] shadow-[0_0_18px_rgba(255,122,26,.35)]" aria-hidden>⚡</span>
+        <span className="grid h-11 w-11 place-items-center border-2 border-papaya bg-ink text-[20px] shadow-[0_0_18px_rgba(138,116,255,.45)]" aria-hidden>⚡</span>
         {tr("Launch")}
       </button>
       <button className={t(tab === "money")} {...(tab === "money" ? { "aria-current": "page" as const } : {})} onClick={onMoney}>
@@ -294,10 +278,11 @@ export function MobileTabs({
         <Icon name="wallet" size={19} className={tab === "money" ? "text-papaya" : "text-flat"} />
         {tr("Money")}
       </button>
-      <a className={t(false)} href="/learn">
-        <Icon name="lab" size={19} className="text-flat" />
-        {tr("Learn")}
-      </a>
+      <button className={t(tab === "spot")} {...(tab === "spot" ? { "aria-current": "page" as const } : {})} onClick={onSpot}>
+        {bar(tab === "spot")}
+        <Icon name="scale" size={19} className={tab === "spot" ? "text-papaya" : "text-flat"} />
+        {tr("Spot")}
+      </button>
       <button className={t(tab === "you")} {...(tab === "you" ? { "aria-current": "page" as const } : {})} onClick={onYou}>
         {bar(tab === "you")}
         <Icon name="trophy" size={19} className={tab === "you" ? "text-papaya" : "text-flat"} />

@@ -19,3 +19,12 @@ export function takeRideTxids(): string[] {
   txids = [];
   return out;
 }
+
+let address: string | null = null;
+/** The passkey wallet the live ride trades from (the board's identity). */
+export function setRideAddress(a: string | null) {
+  address = a;
+}
+export function getRideAddress(): string | null {
+  return address;
+}

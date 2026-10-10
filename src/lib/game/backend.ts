@@ -9,7 +9,7 @@
  */
 import type { RideRecord } from "./rideLog";
 import { myCode, riderIdFor } from "./referral";
-import { takeRideTxids } from "@/lib/ride/session";
+import { takeRideTxids, getRideAddress } from "@/lib/ride/session";
 import { getRideAsset } from "./liveFeed";
 
 const base = (process.env.NEXT_PUBLIC_GAME_API || "http://localhost:8787").replace(/\/$/, "");
@@ -27,12 +27,13 @@ async function get<T>(path: string, fallback: T): Promise<T> {
 
 export function submitRide(rec: RideRecord) {
   const txids = rec.live ? takeRideTxids() : [];
+  const address = rec.address ?? (rec.live ? getRideAddress() : null);
   void fetch(`${base}/api/rides`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      rider: riderIdFor(rec.address),
-      address: rec.address ?? null,
+      rider: riderIdFor(address),
+      address,
       mode: rec.mode,
       asset: rec.asset ?? getRideAsset(),
       live: rec.live,
@@ -88,3 +89,6 @@ export const fetchFieldSummary = (): Promise<FieldWindow[]> => get("/api/field",
 export const fetchPercentile = (points: number): Promise<number | null> => get(`/api/percentile?points=${points}`, null);
 
 export const fetchStreak = (): Promise<number> => get(`/api/streak?rider=${encodeURIComponent(myCode())}`, 0);
+
+/** claimed rider names · this edition has no name claims yet, so every rider shows their generated alias */
+export const fetchClaimedNames = async (_codes: string[]): Promise<{ code: string; name: string }[]> => [];

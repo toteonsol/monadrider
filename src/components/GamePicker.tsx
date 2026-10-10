@@ -47,22 +47,6 @@ const GAMES: {
     best: "best for: long hands-on sessions",
     shot: "/game/pulse3d.jpg",
   },
-  {
-    key: "depot",
-    no: "04",
-    title: "Depot",
-    line: "Your yard, alive. Every crate is volume you actually farmed, stacking as you go.",
-    best: "best for: watching progress build",
-    shot: "/game/depot3d.jpg",
-  },
-  {
-    key: "city",
-    no: "05",
-    title: "Now City · preview",
-    line: "Drive somewhere. Every job has an address, every district is a venue, and every car on the road is a real fill.",
-    best: "preview: render-only, no trades in this world yet",
-    shot: "/game/city3d.jpg",
-  },
 ];
 
 export default function GamePicker({
@@ -93,10 +77,10 @@ export default function GamePicker({
               Pick your ride
             </h2>
             <p className="mt-2 max-w-[620px] text-[12.5px] leading-snug text-flat">
-              Four worlds, one engine. They all farm the same way and share your points, so this is
-              a taste question, not a strategy one. The fifth is the open-world preview — a look at where the drive is going.{" "}
+              Three worlds, one engine. Every move in each is the same capped Perpl trade on Monad and
+              they share your points, so this is a taste question, not a strategy one.{" "}
               <b className="text-bone">
-                {armed ? "You are live, so this lap trades for real." : "Practice is free and needs no wallet."}
+                {armed ? "You are live, so this lap trades on Perpl for real." : "Practice is free and needs no wallet."}
               </b>
             </p>
           </div>

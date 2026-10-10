@@ -52,16 +52,6 @@ const CARTS = [
     accent: "var(--papaya)",
     shot: "/game/pulse3d.jpg",
   },
-  {
-    key: "depot",
-    no: "04",
-    title: "Depot",
-    desc: "your yard, alive · every crate = real volume",
-    tag: "● LIVE",
-    live: true,
-    accent: "var(--chart)",
-    shot: "/game/depot3d.jpg",
-  },
 ] as const;
 
 export function Cartridges({
@@ -77,7 +67,7 @@ export function Cartridges({
   onPlayRide: () => void;
   onPlaySurf: () => void;
   onPlayPulse: () => void;
-  onPlayDepot: () => void;
+  onPlayDepot?: () => void;
   /** Now City · the open-world preview, a door of its own under the grid */
   onPlayCity?: () => void;
 }) {
@@ -86,11 +76,11 @@ export function Cartridges({
       <div className="mb-2.5 flex flex-wrap items-baseline gap-x-4 gap-y-1">
         <div className="display text-[19px] font-black uppercase text-bone min-[900px]:text-[22px]">The grid</div>
         <div className={`text-[12px] ${cue ? "font-bold text-papaya" : "text-flat"}`}>
-          {cue ? "you're LIVE · pick one, your ride trades while you play" : "four cartridges · one engine · practice free, no wallet"}
+          {cue ? "you're LIVE · pick one, your ride trades while you play" : "three worlds · one engine · every move a Perpl trade on Monad · practice free"}
         </div>
-        <div className="ml-auto text-[11px] font-bold text-chart">all four PLAYABLE</div>
+        <div className="ml-auto text-[11px] font-bold text-chart">all three PLAYABLE</div>
       </div>
-      <div className={`grid grid-cols-2 border-2 min-[900px]:grid-cols-4 ${cue ? "border-papaya motion-safe:animate-[rtn-beacon_1.6s_ease-in-out_infinite]" : "border-steel"}`}>
+      <div className={`grid grid-cols-1 border-2 min-[560px]:grid-cols-3 ${cue ? "border-papaya motion-safe:animate-[rtn-beacon_1.6s_ease-in-out_infinite]" : "border-steel"}`}>
         {CARTS.map((c, i) => (
           <button
             key={c.key}
@@ -99,15 +89,11 @@ export function Cartridges({
                 ? onPlaySurf
                 : c.key === "pulse"
                   ? onPlayPulse
-                  : c.key === "depot"
-                    ? onPlayDepot
-                    : onPlayRide
+                  : onPlayRide
             }
-            className={`group relative min-h-[150px] overflow-hidden text-left transition min-[900px]:min-h-[200px] ${
-              i % 2 === 0 ? "border-r-2 border-dashed border-hairline" : ""
-            } ${i < 2 ? "border-b-2 border-dashed border-hairline min-[900px]:border-b-0" : ""} ${
-              i === 2 ? "min-[900px]:border-r-2 min-[900px]:border-dashed min-[900px]:border-hairline" : ""
-            } ${i === 1 ? "min-[900px]:border-r-2 min-[900px]:border-dashed min-[900px]:border-hairline" : ""}`}
+            className={`group relative min-h-[150px] overflow-hidden text-left transition min-[900px]:min-h-[220px] ${
+              i < 2 ? "border-b-2 border-dashed border-hairline min-[560px]:border-b-0 min-[560px]:border-r-2" : ""
+            }`}
             title="play now · free practice, no wallet"
           >
             {/* the real 3D frame from this cartridge's own world */}
@@ -121,7 +107,7 @@ export function Cartridges({
               className="absolute inset-0"
               style={{
                 background:
-                  "linear-gradient(180deg, rgba(17,16,19,.5), rgba(17,16,19,.05) 42%, rgba(17,16,19,.9))",
+                  "linear-gradient(180deg, rgba(14,9,28,.5), rgba(14,9,28,.05) 42%, rgba(14,9,28,.92))",
               }}
             />
             <span aria-hidden className="gp-scan" style={{ animationDelay: `${i * 0.8}s` }} />

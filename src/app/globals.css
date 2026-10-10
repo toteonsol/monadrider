@@ -1,109 +1,48 @@
-@import "tailwindcss";
-
-/* Monad brand palette (monad.xyz/brand-and-media-kit). */
-@theme {
-  --color-monad: #6e54ff;
-  --color-lavender: #ddd7fe;
-  --color-ink: #0e091c;
-  --color-ink-2: #160f2b;
-  --color-ink-3: #211839;
-  --color-line: #2e2350;
-  --color-cyan: #85e6ff;
-  --color-ice: #b9e3f9;
-  --color-pink: #ff8ee4;
-  --color-amber: #ffae45;
-  --color-mute: #9a90c2;
-
-  --font-sans: var(--nf-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--nf-display), var(--nf-inter), ui-sans-serif, sans-serif;
-  --font-mono: var(--nf-mono), ui-monospace, monospace;
-}
+/* The Grand Prix design system (imported from Ride the Now) in Monad livery.
+   Only token VALUES change here, so every imported world and panel repaints
+   at once; nothing structural is overridden. */
+@import "./globals.rtn.css";
 
 :root {
-  color-scheme: dark;
+  /* night: Monad's near-black, a violet cast instead of warm asphalt */
+  --ink: #0e091c;
+  --ink-soft: #140e27;
+  --ink-raised: #1b1433;
+  --grid: #1d1636;
+  --hairline: #2a2148;
+  --steel: #3d3168;
+
+  /* money and LIVE: Monad cyan · warnings and sells: Monad pink */
+  --chart: #85e6ff;
+  --chart-dim: #2b6a7c;
+  --blood: #ff8ee4;
+  --amber: #ffae45;
+  --sky: #b9e3f9;
+
+  /* text */
+  --bone: #f3f0ff;
+  --flat: #a49dc9;
+  --flat-dim: #968ebf;
+
+  /* the signature livery: Monad purple, lifted a step so ink text on a CTA
+     stays readable (≥ 5:1) */
+  --papaya: #8a74ff;
+  --papaya-hot: #a897ff;
+  --lav: #ddd7fe;
+
+  /* Monad's own purple, for marks and glows */
+  --monad: #6e54ff;
+
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
 }
 
-html,
 body {
-  background: var(--color-ink);
-  color: #f4f1ff;
-  -webkit-tap-highlight-color: transparent;
-  overscroll-behavior: none;
+  background-image:
+    radial-gradient(110% 70% at 50% 0%, rgba(110, 84, 255, 0.08), transparent 62%),
+    radial-gradient(90% 60% at 100% 100%, rgba(133, 230, 255, 0.04), transparent 60%);
 }
 
-body {
-  min-height: 100dvh;
-  font-family: var(--font-sans);
-}
-
-.font-display {
-  font-family: var(--font-display);
-  letter-spacing: -0.02em;
-}
-
-.num {
-  font-family: var(--font-mono);
-  font-variant-numeric: tabular-nums;
-}
-
-.card {
-  background: var(--color-ink-2);
-  border: 1px solid var(--color-line);
-  border-radius: 20px;
-}
-
-.btn {
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-size: 13px;
-  font-weight: 600;
-  border-radius: 14px;
-  padding: 14px 18px;
-  transition:
-    transform 80ms ease,
-    opacity 120ms ease,
-    background 120ms ease;
-  touch-action: manipulation;
-}
-.btn:active {
-  transform: scale(0.97);
-}
-.btn:disabled {
-  opacity: 0.4;
-  pointer-events: none;
-}
-.btn-primary {
-  background: var(--color-monad);
-  color: white;
-}
-.btn-ghost {
-  background: var(--color-ink-3);
-  color: var(--color-lavender);
-  border: 1px solid var(--color-line);
-}
-
-.label {
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-size: 11px;
-  color: var(--color-mute);
-}
-
-.glow {
-  box-shadow:
-    0 0 0 1px rgba(110, 84, 255, 0.5),
-    0 10px 40px -10px rgba(110, 84, 255, 0.55);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
+@theme inline {
+  --color-monad: var(--monad);
 }
