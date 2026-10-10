@@ -9,6 +9,7 @@ import { RideScreen } from "./RideScreen";
 import { MoneyScreen } from "./MoneyScreen";
 import { SpotScreen } from "./SpotScreen";
 import { usd, short } from "@/lib/fmt";
+import { Welcome } from "./Welcome";
 
 type Tab = "surf" | "passenger" | "spot" | "money";
 
@@ -39,6 +40,7 @@ export function App() {
 
   return (
     <div className="flex h-[100dvh] flex-col lg:flex-row">
+      <Welcome onLogin={() => go("money")} />
       {/* desktop rail */}
       <nav className="hidden w-56 shrink-0 flex-col border-r border-line px-3 py-5 lg:flex">
         <Brand />
@@ -54,7 +56,10 @@ export function App() {
             </button>
           ))}
         </div>
-        <div className="mt-auto">
+        <div className="mt-auto space-y-3">
+          <a href="/about" className="label block px-3 hover:text-lavender">
+            How it works
+          </a>
           <WalletChip onClick={() => go("money")} />
         </div>
       </nav>

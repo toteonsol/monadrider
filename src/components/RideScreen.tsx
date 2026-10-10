@@ -18,6 +18,8 @@ import { WaveCanvas } from "./WaveCanvas";
 import { ReceiptSheet } from "./ReceiptSheet";
 import { LiveTape } from "./LiveTape";
 import { price, signedUsd, clock, usd } from "@/lib/fmt";
+import { sfx, isMuted, setMuted } from "@/lib/game/sfx";
+import { CoachOverlay } from "./CoachOverlay";
 
 export const MARKETS = ["MON", "BTC", "ETH", "SOL", "HYPE"] as const;
 const LEVERAGE = 3;
@@ -91,6 +93,27 @@ export function RideScreen({
 
   const sig = ride.signal.signal;
 
+  // sound: fills ping, a winning close chimes, a stop crashes, the end sings or sighs
+  const [muted, setMute] = useState(false);
+  useEffect(() => setMute(isMuted()), []);
+  const [heard, setHeard] = useState({ fills: 0, wipeouts: 0, status: s.status });
+  useEffect(() => {
+    if (s.fills.length > heard.fills) {
+      const f = s.fills[s.fills.length - 1];
+      if (f.action !== "close") sfx.fill();
+      else if ((f.pnl ?? 0) > 0) sfx.coin();
+      else if (f.reason !== "stop") sfx.dodge();
+    }
+    if (s.wipeouts > heard.wipeouts) sfx.crash();
+    if (s.status === "ended" && heard.status === "riding") (ride.net >= 0 ? sfx.cascade : sfx.runOver)();
+    if (s.fills.length !== heard.fills || s.wipeouts !== heard.wipeouts || s.status !== heard.status)
+      setHeard({ fills: s.fills.length, wipeouts: s.wipeouts, status: s.status });
+  }, [s.fills, s.wipeouts, s.status, heard, ride.net]);
+  const steer = (b: Band) => {
+    sfx.click();
+    ride.setBand(b);
+  };
+
   return (
     <div className="flex h-full min-h-0 flex-col lg:flex-row lg:gap-4">
       <section className="relative flex min-h-0 flex-1 flex-col">
@@ -112,6 +135,17 @@ export function RideScreen({
                 ))}
               </select>
               <span className={`h-2 w-2 rounded-full ${feed.connected ? "bg-cyan" : "bg-amber"}`} title={feed.connected ? "live" : "connecting"} />
+              <button
+                className="label rounded-md px-1.5 py-1 hover:text-lavender"
+                onClick={() => {
+                  setMuted(!muted);
+                  setMute(!muted);
+                  if (muted) sfx.click();
+                }}
+                aria-label={muted ? "Sound on" : "Sound off"}
+              >
+                {muted ? "🔇" : "🔊"}
+              </button>
             </div>
             <div className="num mt-1 text-2xl font-semibold">{price(feed.mid)}</div>
             <div className={`num text-xs ${dayChange >= 0 ? "text-cyan" : "text-pink"}`}>
@@ -137,8 +171,9 @@ export function RideScreen({
             entryPx={s.entryPx}
             wipeouts={s.wipeouts}
             riding={riding}
-            onBand={riding && !autopilot ? ride.setBand : undefined}
+            onBand={riding && !autopilot ? steer : undefined}
           />
+          {riding && !autopilot && <CoachOverlay />}
           {riding && (
             <div className="pointer-events-none absolute left-4 top-2 rounded-full border border-line bg-ink/70 px-3 py-1 text-xs backdrop-blur">
               <span className={s.band > 0 ? "text-cyan" : s.band < 0 ? "text-pink" : "text-lavender"}>{BAND_WORD[s.band]}</span>
@@ -166,9 +201,9 @@ export function RideScreen({
             ) : (
               <div className="space-y-2">
                 <div className="grid grid-cols-3 gap-2">
-                  <BandButton label="Short" sub="trough" active={s.target === -1} color="pink" onClick={() => ride.setBand(-1)} />
-                  <BandButton label="Flat" sub="line" active={s.target === 0} color="lavender" onClick={() => ride.setBand(0)} />
-                  <BandButton label="Long" sub="crest" active={s.target === 1} color="cyan" onClick={() => ride.setBand(1)} />
+                  <BandButton label="Short" sub="trough" active={s.target === -1} color="pink" onClick={() => steer(-1)} />
+                  <BandButton label="Flat" sub="line" active={s.target === 0} color="lavender" onClick={() => steer(0)} />
+                  <BandButton label="Long" sub="crest" active={s.target === 1} color="cyan" onClick={() => steer(1)} />
                 </div>
                 <button className="btn btn-ghost w-full !py-2.5" onClick={() => void ride.stop()}>
                   End ride
