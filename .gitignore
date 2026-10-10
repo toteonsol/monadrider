@@ -11,3 +11,4 @@ next-env.d.ts
 PLAN.md
 .claude/
 data/
+relay/node_modules/
