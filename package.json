@@ -8,7 +8,10 @@
     "build": "next build",
     "start": "next start",
     "relay": "node relay/server.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "verify:engine": "tsx scripts/verify-engine.mts",
+    "verify:onchain": "tsx scripts/verify-perpl-onchain.mts",
+    "verify": "pnpm verify:engine && pnpm verify:onchain"
   },
   "dependencies": {
     "@category-labs/mera": "0.2.0",
@@ -29,6 +32,7 @@
     "@types/react-dom": "^19",
     "@types/ws": "^8.18.2",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

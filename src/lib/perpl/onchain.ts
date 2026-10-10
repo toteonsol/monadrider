@@ -167,10 +167,12 @@ export async function readPosition(pc: PublicClient, m: PerplMarket, accountId: 
 }
 
 /** Send a contract write with an explicit gas limit. Monad bills the declared
- *  limit, not the gas used, so estimate and add a modest buffer. */
+ *  limit, not the gas used, so estimate and add a buffer: 1.5× covers the book
+ *  moving between estimate and inclusion (an IOC may walk more makers), and at
+ *  ~400k gas per order that is still about a thousandth of a dollar. */
 async function send(pc: PublicClient, w: W, req: Parameters<W["writeContract"]>[0]) {
   const gas = await pc.estimateContractGas({ ...(req as object), account: w.account } as Parameters<PublicClient["estimateContractGas"]>[0]);
-  const hash = await w.writeContract({ ...(req as object), gas: (gas * 12n) / 10n } as Parameters<W["writeContract"]>[0]);
+  const hash = await w.writeContract({ ...(req as object), gas: (gas * 15n) / 10n } as Parameters<W["writeContract"]>[0]);
   const receipt = await pc.waitForTransactionReceipt({ hash, timeout: 30_000 });
   if (receipt.status !== "success") throw Object.assign(new Error("transaction reverted"), { hash });
   return { hash, block: Number(receipt.blockNumber) };
