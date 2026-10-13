@@ -19,6 +19,7 @@ import { HDKey } from "@scure/bip32";
 import { entropyToMnemonic, mnemonicToSeedSync } from "@scure/bip39";
 import { wordlist } from "@scure/bip39/wordlists/english.js";
 import {
+  nonceManager,
   createPublicClient,
   createWalletClient,
   erc20Abi,
@@ -144,7 +145,9 @@ export function MeraProvider({ children }: { children: React.ReactNode }) {
   const open = useCallback(
     (prf: Uint8Array, credentialId: string) => {
       const s = createSecp256k1SigningSession({ privateKey: deriveEvmKey(prf) });
-      const acct = toViemAccount(s);
+      // track the nonce locally: back-to-back txs (approve, then deposit) must
+      // not depend on a load-balanced RPC node that is a moment behind
+      const acct = toViemAccount(s, { nonceManager });
       setSession(s);
       setAccount(acct);
       setActiveId(credentialId);
