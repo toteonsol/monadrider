@@ -86,6 +86,11 @@ wss.on("connection", (client, req) => {
   // pass Perpl's own close code and reason through, so the app can say why
   upstream.on("close", (code, reason) => {
     const sendable = code === 1000 || (code >= 3000 && code <= 4999);
+    // some proxies drop custom close codes, so say it in a frame first too
+    try {
+      if (code !== 1000 && client.readyState === WebSocket.OPEN)
+        client.send(JSON.stringify({ mt: 0, relay: "upstream-closed", code, reason: String(reason).slice(0, 120) }));
+    } catch {}
     try {
       if (sendable) client.close(code, String(reason).slice(0, 120));
       else client.close();

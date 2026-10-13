@@ -56,13 +56,13 @@ export function useApiKeyAccount(): ApiKeyAccount {
       setStatus("error");
       const m = e instanceof Error ? e.message : String(e);
       const detail = m.replace(/^Perpl WS /, "");
-      if (/code 3401/.test(m)) {
+      if (/code 3401|"code":3401/.test(m)) {
         setError(
           "Perpl says unauthorized (3401): the API key and the secret don't belong together, or the key was revoked or has expired. The first box needs the API key itself (not the public key), the second box the hex private key from the same key.",
         );
         return null;
       }
-      if (/code 3403/.test(m)) {
+      if (/code 3403|"code":3403/.test(m)) {
         setError("Perpl says this key isn't allowed to trade (3403). Create a new key with the trade scope.");
         return null;
       }
