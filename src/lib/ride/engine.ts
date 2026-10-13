@@ -31,7 +31,7 @@ export interface Fill {
   fee: number;
   /** realised P&L of a close, before fees */
   pnl?: number;
-  reason?: "player" | "passenger" | "stop" | "end" | "loss-limit";
+  reason?: "player" | "passenger" | "stop" | "take" | "end" | "loss-limit";
   txid?: string;
   block?: number;
 }
@@ -58,6 +58,8 @@ export interface Executor {
 export interface Rails {
   clipUsd: number;
   stopPct: number;
+  /** close a position once it has moved this far in your favour · 0 = off */
+  takePct: number;
   lossLimitUsd: number;
   durationSec: number;
   throttleMs: number;
@@ -66,6 +68,7 @@ export interface Rails {
 export const DEFAULT_RAILS: Rails = {
   clipUsd: 10,
   stopPct: 0.6,
+  takePct: 0,
   lossLimitUsd: 3,
   durationSec: 180,
   throttleMs: 1500,
@@ -86,6 +89,7 @@ export interface RideState {
   volume: number;
   fills: Fill[];
   wipeouts: number;
+  takes: number;
   peak: number;
   maxDrawdown: number;
   startedAt: number;
@@ -106,6 +110,7 @@ export const freshState = (): RideState => ({
   volume: 0,
   fills: [],
   wipeouts: 0,
+  takes: 0,
   peak: 0,
   maxDrawdown: 0,
   startedAt: 0,
@@ -127,6 +132,12 @@ export class RideEngine {
     public rails: Rails,
   ) {
     this.rails = clampRails(rails);
+  }
+
+  /** Retune the rails mid-ride (stop, take-profit, max loss); still clamped. */
+  setRails(r: Partial<Rails>) {
+    this.rails = clampRails({ ...this.rails, ...r });
+    this.emit();
   }
 
   subscribe(fn: (s: RideState) => void) {
@@ -174,6 +185,12 @@ export class RideEngine {
         s.wipeouts += 1;
         s.target = 0;
         await this.closeNow(mid, "stop");
+        return;
+      }
+      if (this.rails.takePct > 0 && move >= this.rails.takePct) {
+        s.takes += 1;
+        s.target = 0;
+        await this.closeNow(mid, "take");
         return;
       }
     }
@@ -283,6 +300,7 @@ export function clampRails(r: Rails): Rails {
   return {
     clipUsd: Math.min(Math.max(r.clipUsd, 1), RAIL_LIMITS.clipUsdMax),
     stopPct: Math.min(Math.max(r.stopPct, 0.1), 5),
+    takePct: Math.min(Math.max(r.takePct ?? 0, 0), 10),
     lossLimitUsd: Math.min(Math.max(r.lossLimitUsd, 0.5), RAIL_LIMITS.lossLimitMax),
     durationSec: Math.min(Math.max(r.durationSec, 30), RAIL_LIMITS.durationMax),
     throttleMs: Math.max(r.throttleMs, 800),

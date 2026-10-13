@@ -43,7 +43,11 @@ async function run(path: number[], targets: Record<number, -1 | 0 | 1>, r = rail
   check("flip long → short goes through flat (close, then open)", e.state.band === -1 && e.state.fills.map((f) => f.action).join() === "open-long,close,open-short");
 }
 {
-  const c = clampRails({ clipUsd: 10_000, stopPct: 50, lossLimitUsd: 999, durationSec: 99_999, throttleMs: 0 });
+  const e = await run([100, 100, 100.6], { 0: 1 }, { ...rails, takePct: 0.5 });
+  check("take-profit: a 0.6% move with a long closes at the 0.5% target", e.state.takes === 1 && e.state.band === 0 && e.state.realized > 0);
+}
+{
+  const c = clampRails({ clipUsd: 10_000, stopPct: 50, takePct: 0, lossLimitUsd: 999, durationSec: 99_999, throttleMs: 0 });
   check("rails clamp to hard ceilings", c.clipUsd === RAIL_LIMITS.clipUsdMax && c.lossLimitUsd === RAIL_LIMITS.lossLimitMax && c.durationSec === RAIL_LIMITS.durationMax && c.throttleMs >= 800);
 }
 process.exit(failed ? 1 : 0);

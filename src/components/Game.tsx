@@ -26,6 +26,8 @@ import { History } from "./History";
 import { ReceiptSheet } from "./ReceiptSheet";
 import { withdrawAusd } from "@/lib/perpl/onchain";
 import { publicClient } from "@/lib/wallet/mera";
+import { RadioBell, RadioToasts } from "./PitRadio";
+import { useOpportunities } from "@/lib/useOpportunities";
 import { useLiveBridge } from "@/lib/ride/useLiveBridge";
 import { career, type Career } from "@/lib/game/rideLog";
 import { fetchStreak } from "@/lib/game/backend";
@@ -54,6 +56,7 @@ export function Game() {
   const [copied, setCopied] = useState(false);
   const bridge = useLiveBridge(asset);
   const mera = useMera();
+  useOpportunities();
 
   useEffect(() => {
     const read = () => setStats(career());
@@ -111,6 +114,12 @@ export function Game() {
     if (bridge.armed) void bridge.disarm();
   };
   const driveMode = bridge.mode === "passenger" ? "passenger" : "turbo";
+  // "ride this" from a radio card: switch market (not mid-ride) and open the cockpit
+  const rideThis = (a: string) => {
+    if (world) setWorld(null);
+    if (!bridge.armed) setAsset(a);
+    go("trade");
+  };
 
   /* ── a world is open: it owns the screen ── */
   if (world) {
@@ -136,6 +145,7 @@ export function Game() {
         )}
         {world === "surfer" && <SurfRide {...common} />}
         {world === "pulse" && <PulseRide {...common} />}
+        <RadioToasts onRide={rideThis} ridesOnly />
       </div>
     );
   }
@@ -164,11 +174,19 @@ export function Game() {
             RIDE THE NOW <span className="text-papaya">MONAD</span>
           </span>
         </div>
+        <div className="flex items-center gap-2">
+        <RadioBell onRide={rideThis} />
         <button onClick={() => openMoney("wallet")} className="display flex items-center gap-2 border-2 border-steel px-2.5 py-1.5 text-[11px] font-bold uppercase text-bone">
           <span className={`h-2 w-2 rounded-full ${mera.address ? "bg-chart" : "bg-steel"}`} />
           {mera.address ? `${usd(mera.balances?.ausd ?? 0)} AUSD` : "log in"}
         </button>
+        </div>
       </header>
+      {/* desktop: the radio sits top-right of the page */}
+      <div className="fixed right-5 top-4 z-50 hidden lg:block">
+        <RadioBell onRide={rideThis} />
+      </div>
+      <RadioToasts onRide={rideThis} />
 
       {bridge.armed && tab !== "trade" && (
         <button onClick={() => go("trade")} className="display sticky top-0 z-40 flex w-full items-center justify-center gap-2 border-b-2 border-chart bg-ink/95 py-2 text-[11px] font-bold uppercase tracking-wide text-chart backdrop-blur">

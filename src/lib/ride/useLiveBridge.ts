@@ -32,6 +32,7 @@ import { setRideAsset } from "@/lib/game/liveFeed";
 import { setRideAddress } from "./session";
 import { saveReceipt, type Receipt } from "./receipts";
 import { submitLiveRide } from "@/lib/game/backend";
+import { radio } from "@/lib/radio";
 
 export type DriveMode = "turbo" | "passenger";
 /** where live orders come from: the passkey wallet (orders sent onchain from
@@ -68,6 +69,8 @@ export function useLiveBridge(asset: string) {
   const [state, setState] = useState<RideState | null>(null);
   const [armError, setArmError] = useState("");
   const [receipt, setReceipt] = useState<Receipt | null>(null);
+  /** the venue's own view of the position, read from Perpl (not the engine's) */
+  const [venuePos, setVenuePos] = useState<{ side: 1 | -1 | 0; size: number; entry: number; pnl: number | null; at: number } | null>(null);
   const engine = useRef<RideEngine | null>(null);
   const passenger = useRef(new Passenger());
 
@@ -136,10 +139,29 @@ export function useLiveBridge(asset: string) {
     e.subscribe((s) => {
       setState(s);
       // collect every fill's tx before a final submit can take the trail
-      for (; seen < s.fills.length; seen++) pushRideTx(s.fills[seen].txid);
+      for (; seen < s.fills.length; seen++) {
+        const f = s.fills[seen];
+        pushRideTx(f.txid);
+        if (f.reason === "stop")
+          radio({ kind: "ride", tone: "warn", title: `Stop hit on ${m.name}`, body: `Price moved ${e.rails.stopPct}% against the position, so it closed${f.pnl != null ? ` at ${f.pnl >= 0 ? "+" : "−"}$${Math.abs(f.pnl).toFixed(2)}` : ""}. That's the rail doing its job: small loss, ride goes on.`, asset: m.name, tx: f.txid });
+        else if (f.reason === "take")
+          radio({ kind: "ride", tone: "good", title: `Take-profit on ${m.name}`, body: `Price moved ${e.rails.takePct}% your way, so the gain was banked${f.pnl != null ? `: +$${Math.abs(f.pnl).toFixed(2)}` : ""}.`, asset: m.name, tx: f.txid });
+      }
       if (s.status === "ended" && engine.current === e) {
         const rec = saveReceipt(s, { asset: m.name, mode: "live", autopilot, rails: e.rails, owner, lastMid: feedRef.current.mid });
         setReceipt(rec);
+        radio({
+          kind: "ride",
+          tone: rec.net >= 0 ? "good" : "warn",
+          title: `${autopilot ? "Passenger" : "Your"} ride on ${m.name}: ${rec.net >= 0 ? "+" : "−"}$${Math.abs(rec.net).toFixed(2)}`,
+          body: `${rec.trades} round trips, $${Math.round(rec.volume)} volume, $${rec.fees.toFixed(2)} fees, ${rec.wipeouts} stop${rec.wipeouts === 1 ? "" : "s"}. Every fill is on the receipt with its Monad tx.`,
+          asset: m.name,
+          tx: rec.fills.find((x) => x.txid)?.txid,
+        });
+        if (rec.wipeouts >= 2)
+          radio({ kind: "tip", tone: "info", title: "Tip · stops kept hitting", body: "When the stop keeps firing, the market is choppier than your stop is wide. Widen it a little, or sit on the line (flat) until the swell picks a side." });
+        else if (rec.trades >= 6 && rec.fees > Math.abs(rec.realized))
+          radio({ kind: "tip", tone: "info", title: "Tip · fees outran the moves", body: "Lots of quick flips paid more in fees than the price moved. Hold a lane longer, or let Passenger pace it." });
         if (s.fills.length) {
           submitLiveRide({
             owner,
@@ -229,8 +251,56 @@ export function useLiveBridge(asset: string) {
     [],
   );
 
+  /** Live controls from the cockpit (work in both drive modes). */
+  const closeNow = useCallback(() => engine.current?.setTarget(0), []);
+  const flip = useCallback(() => {
+    const e = engine.current;
+    if (e && e.state.band !== 0) e.setTarget((-e.state.band) as Band);
+  }, []);
+  const tuneRails = useCallback((r: Partial<Rails>) => {
+    setRails((cur) => ({ ...cur, ...r }));
+    engine.current?.setRails(r);
+  }, []);
+
+  // the venue's own numbers, polled while live (proof next to the game)
+  useEffect(() => {
+    if (!armed) {
+      setVenuePos(null);
+      return;
+    }
+    let dead = false;
+    const read = async () => {
+      const m = feedRef.current.market;
+      if (!m) return;
+      try {
+        if (route === "perpl" && apiAcct.key) {
+          const p = getPerplWs(apiAcct.key).getPosition(m.name);
+          if (!dead)
+            setVenuePos(
+              p
+                ? { side: p.szi > 0 ? 1 : -1, size: Math.abs(p.szi), entry: p.entryPx, pnl: p.szi * ((feedRef.current.mid || p.entryPx) - p.entryPx), at: Date.now() }
+                : { side: 0, size: 0, entry: 0, pnl: null, at: Date.now() },
+            );
+        } else if (perpl.account) {
+          const p = await readPosition(publicClient, m, perpl.account.id);
+          if (!dead) setVenuePos({ side: p.side, size: p.size, entry: p.entry, pnl: p.side ? p.side * p.size * ((p.mark || feedRef.current.mid) - p.entry) : null, at: Date.now() });
+        }
+      } catch {}
+    };
+    void read();
+    const t = setInterval(read, 2500);
+    return () => {
+      dead = true;
+      clearInterval(t);
+    };
+  }, [armed, route, apiAcct.key, perpl.account]);
+
   return {
     feed,
+    venuePos,
+    closeNow,
+    flip,
+    tuneRails,
     mera,
     perpl,
     apiAcct,

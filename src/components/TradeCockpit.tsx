@@ -85,7 +85,7 @@ export function TradeCockpit({
 
         {/* market board */}
         <div className="grid grid-cols-2 border-2 border-steel min-[560px]:grid-cols-5">
-          {MARKETS.map((m, i) => (
+          {(MARKETS.includes(asset as (typeof MARKETS)[number]) ? [...MARKETS] : [...MARKETS.slice(0, 4), asset]).map((m, i) => (
             <button
               key={m}
               disabled={b.armed}
@@ -95,7 +95,7 @@ export function TradeCockpit({
               } disabled:opacity-60`}
             >
               <div className={`display text-[14px] font-black ${asset === m ? "text-papaya" : "text-bone"}`}>{m}</div>
-              <div className="font-telemetry text-[12px] text-flat">{price(mids[m] ?? 0)}</div>
+              <div className="font-telemetry text-[12px] text-flat">{price(mids[m] ?? (m === asset ? b.feed.mid : 0))}</div>
             </button>
           ))}
         </div>
@@ -132,6 +132,7 @@ export function TradeCockpit({
           <div className="grid gap-4 px-4 py-4 min-[640px]:grid-cols-2">
             <Slider label="Clip (each position)" v={r.clipUsd} min={2} max={RAIL_LIMITS.clipUsdMax} step={1} fmt={(x) => usd(x, 0)} on={(x) => set("clipUsd", x)} off={b.armed} />
             <Slider label="Stop (move against you)" v={r.stopPct} min={0.2} max={2} step={0.1} fmt={(x) => `${x.toFixed(1)}%`} on={(x) => set("stopPct", x)} off={b.armed} />
+            <Slider label="Take profit (move your way) · 0 = off" v={r.takePct} min={0} max={3} step={0.1} fmt={(x) => (x ? `${x.toFixed(1)}%` : "off")} on={(x) => set("takePct", x)} off={b.armed} />
             <Slider label="Max loss, then it ends" v={r.lossLimitUsd} min={1} max={RAIL_LIMITS.lossLimitMax} step={1} fmt={(x) => usd(x, 0)} on={(x) => set("lossLimitUsd", x)} off={b.armed} />
             <Slider label="Ride length" v={r.durationSec} min={60} max={600} step={60} fmt={(x) => `${x / 60} min`} on={(x) => set("durationSec", x)} off={b.armed} />
           </div>
@@ -193,6 +194,43 @@ export function TradeCockpit({
                   last tx <TxLink hash={lastTx} />
                 </span>
               )}
+            </div>
+            {/* the venue's own numbers, read from Perpl */}
+            <div className="mx-4 mb-3 border-2 border-steel bg-ink px-3 py-2.5">
+              <div className="flex items-center justify-between">
+                <span className="display text-[10px] font-bold uppercase tracking-[0.14em] text-flat">on Perpl right now</span>
+                <span className="font-telemetry text-[10px] text-flat-dim">{b.route === "perpl" ? "from your account" : "from the Exchange contract"}</span>
+              </div>
+              {b.venuePos ? (
+                b.venuePos.side === 0 ? (
+                  <div className="mt-1 text-[13px] text-flat">flat · no {asset} position</div>
+                ) : (
+                  <div className="mt-1 flex flex-wrap items-baseline gap-x-3 text-[13px]">
+                    <span className={`display font-black ${b.venuePos.side > 0 ? "text-chart" : "text-blood"}`}>{b.venuePos.side > 0 ? "LONG" : "SHORT"}</span>
+                    <span className="font-telemetry text-bone">
+                      {b.venuePos.size.toLocaleString(undefined, { maximumFractionDigits: 4 })} {asset} @ {price(b.venuePos.entry)}
+                    </span>
+                    {b.venuePos.pnl != null && (
+                      <span className={`font-telemetry ${b.venuePos.pnl >= 0 ? "text-chart" : "text-blood"}`}>{signedUsd(b.venuePos.pnl)} unrealised</span>
+                    )}
+                  </div>
+                )
+              ) : (
+                <div className="mt-1 text-[13px] text-flat">reading Perpl…</div>
+              )}
+            </div>
+            {/* act on it */}
+            <div className="mx-4 mb-3 grid grid-cols-2 gap-2">
+              <button disabled={!s?.band} onClick={b.closeNow} className="gp-btn display border-2 border-steel px-3 py-2.5 text-[11px] font-black uppercase text-bone hover:border-papaya disabled:opacity-40">
+                close now
+              </button>
+              <button disabled={!s?.band} onClick={b.flip} className="gp-btn display border-2 border-steel px-3 py-2.5 text-[11px] font-black uppercase text-bone hover:border-papaya disabled:opacity-40">
+                flip {s?.band ? (s.band > 0 ? "to short" : "to long") : ""}
+              </button>
+            </div>
+            <div className="mx-4 mb-3 grid gap-3 min-[560px]:grid-cols-2">
+              <Slider label="Stop · live" v={r.stopPct} min={0.2} max={2} step={0.1} fmt={(x) => `${x.toFixed(1)}%`} on={(x) => b.tuneRails({ stopPct: x })} off={false} />
+              <Slider label="Take profit · live" v={r.takePct} min={0} max={3} step={0.1} fmt={(x) => (x ? `${x.toFixed(1)}%` : "off")} on={(x) => b.tuneRails({ takePct: x })} off={false} />
             </div>
             <div className="grid grid-cols-2 gap-2 p-4 pt-0">
               <button onClick={onRide} className="gp-btn gp-btn-primary display border-2 border-papaya bg-papaya px-4 py-3 text-[12px] font-black uppercase text-ink">
