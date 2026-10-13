@@ -19,6 +19,8 @@ import { TxLink } from "./TxLink";
 import { LoginCard } from "./LoginCard";
 import { History } from "./History";
 import { SendFunds } from "./SendFunds";
+import { ActionStatus, explainError, type ActionState } from "./ActionStatus";
+import { radio } from "@/lib/radio";
 
 const MIN_OPEN = 10; // Perpl's minimum to open an account, and for every deposit (AUSD)
 
@@ -131,40 +133,46 @@ function PerplMargin({
 }) {
   const mera = useMera();
   const [amt, setAmt] = useState("");
-  const [busy, setBusy] = useState<"" | "in" | "out">("");
-  const [err, setErr] = useState("");
-  const [txs, setTxs] = useState<{ label: string; hash: string }[]>([]);
+  const [st, setSt] = useState<ActionState>({ phase: "idle" });
+  const busy = st.phase === "busy";
   const n = Number(amt);
   const needOpen = loaded && !account;
 
   async function run(dir: "in" | "out") {
-    if (!mera.wallet || !(n > 0)) return;
-    setErr("");
-    setBusy(dir);
+    if (!mera.wallet) return setSt({ phase: "error", message: "The wallet is locked.", hint: "Log in with your passkey above." });
+    if (!(n > 0)) return setSt({ phase: "error", message: `Enter an amount to ${dir === "in" ? "deposit" : "withdraw"}.`, hint: dir === "in" ? `At least ${MIN_OPEN} AUSD.` : "Tap Max free to take everything that's free." });
+    if (dir === "in") {
+      if (n < MIN_OPEN) return setSt({ phase: "error", message: needOpen ? `Perpl needs at least ${MIN_OPEN} AUSD to open an account.` : `Perpl's smallest deposit is ${MIN_OPEN} AUSD.` });
+      if (n > walletAusd + 1e-9) return setSt({ phase: "error", message: "More than the AUSD in your wallet.", hint: "Swap MON → AUSD on Spot, or lower the amount." });
+    } else {
+      if (!account) return setSt({ phase: "error", message: "No Perpl account yet.", hint: `Deposit ${MIN_OPEN}+ AUSD first.` });
+      if (n < 0.01) return setSt({ phase: "error", message: "Perpl's smallest withdrawal is 0.01 AUSD." });
+      if (n > account.free + 1e-9) return setSt({ phase: "error", message: "More than your free margin.", hint: "Margin inside an open position unlocks when the position closes." });
+    }
+    const step = (t: string) => setSt({ phase: "busy", step: t });
     try {
       if (dir === "in") {
-        if (n < MIN_OPEN)
-          throw new Error(needOpen ? `Perpl needs at least ${MIN_OPEN} AUSD to open an account.` : `Perpl's smallest deposit is ${MIN_OPEN} AUSD.`);
-        if (n > walletAusd + 1e-9) throw new Error("More than the AUSD in your wallet.");
-        const r = await depositAusd(publicClient, mera.wallet, n);
-        setTxs((t) => [
-          ...(r.approve ? [{ label: "Approve AUSD", hash: r.approve.hash }] : []),
-          { label: r.created ? "Open Perpl account" : "Deposit", hash: r.tx.hash },
-          ...t,
-        ]);
+        const r = await depositAusd(publicClient, mera.wallet, n, step);
+        const title = r.created ? `Perpl account opened with ${usd(n)} AUSD` : `Deposited ${usd(n)} AUSD into Perpl`;
+        setSt({
+          phase: "done",
+          title,
+          lines: ["It's now margin you can ride with: open Trade and go live."],
+          txs: [...(r.approve ? [{ label: "Approve AUSD", hash: r.approve.hash }] : []), { label: r.created ? "Open account + deposit" : "Deposit", hash: r.tx.hash }],
+        });
+        radio({ kind: "wallet", tone: "good", title, body: "Margin is ready on Perpl. Open Trade and go live.", tx: r.tx.hash });
       } else {
-        if (n < 0.01) throw new Error("Perpl's smallest withdrawal is 0.01 AUSD.");
-        if (n > (account?.free ?? 0) + 1e-9) throw new Error("More than your free margin (margin in an open position unlocks when it closes).");
-        const r = await withdrawAusd(publicClient, mera.wallet, n);
-        setTxs((t) => [{ label: "Withdraw", hash: r.hash }, ...t]);
+        const r = await withdrawAusd(publicClient, mera.wallet, n, step);
+        const title = `Withdrew ${usd(n)} AUSD to your wallet`;
+        setSt({ phase: "done", title, lines: ["It's in this wallet now. Send it anywhere below."], txs: [{ label: "Withdraw", hash: r.hash }] });
+        radio({ kind: "wallet", tone: "good", title, body: "Back in your passkey wallet.", tx: r.hash });
       }
       setAmt("");
       await onDone();
     } catch (e) {
-      const m = e instanceof Error ? (e as { shortMessage?: string }).shortMessage || e.message : String(e);
-      setErr(m.split("\n")[0]);
-    } finally {
-      setBusy("");
+      const x = explainError(e);
+      setSt({ phase: "error", ...x });
+      radio({ kind: "wallet", tone: "warn", title: `${dir === "in" ? "Deposit" : "Withdrawal"} didn't go through`, body: x.hint ? `${x.message} ${x.hint}` : x.message });
     }
   }
 
@@ -205,29 +213,26 @@ function PerplMargin({
           />
           <span className="label absolute right-3 top-1/2 -translate-y-1/2">AUSD</span>
         </div>
-        <button className="btn btn-ghost !px-3" onClick={() => setAmt(walletAusd.toFixed(2))}>
-          Max
+      </div>
+      <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
+        <button className="btn btn-ghost !px-2.5 !py-1.5 !text-[10.5px]" onClick={() => setAmt((Math.floor(walletAusd * 100) / 100).toFixed(2))}>
+          max wallet {usd(walletAusd)}
         </button>
+        {account && (
+          <button className="btn btn-ghost !px-2.5 !py-1.5 !text-[10.5px]" onClick={() => setAmt((Math.floor(account.free * 100) / 100).toFixed(2))}>
+            max free {usd(account.free)}
+          </button>
+        )}
       </div>
       <div className="mt-2 grid grid-cols-2 gap-2">
-        <button className="btn btn-primary" disabled={!!busy || !(n > 0)} onClick={() => void run("in")}>
-          {busy === "in" ? "Sending…" : needOpen ? "Open + deposit" : "Deposit"}
+        <button className="btn btn-primary" disabled={busy} onClick={() => void run("in")}>
+          {needOpen ? "Open + deposit" : "Deposit"}
         </button>
-        <button className="btn btn-ghost" disabled={!!busy || !(n > 0) || !account} onClick={() => void run("out")}>
-          {busy === "out" ? "Sending…" : "Withdraw"}
+        <button className="btn btn-ghost" disabled={busy} onClick={() => void run("out")}>
+          Withdraw
         </button>
       </div>
-      {err && <p className="mt-2 text-sm text-pink">{err}</p>}
-      {txs.length > 0 && (
-        <div className="mt-3 space-y-1">
-          {txs.slice(0, 5).map((t) => (
-            <div key={t.hash} className="flex justify-between text-xs">
-              <span className="text-mute">{t.label}</span>
-              <TxLink hash={t.hash} />
-            </div>
-          ))}
-        </div>
-      )}
+      <ActionStatus s={st} onClear={() => setSt({ phase: "idle" })} />
     </section>
   );
 }

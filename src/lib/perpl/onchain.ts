@@ -186,10 +186,14 @@ async function ensureAllowance(pc: PublicClient, w: W, amount: bigint) {
 }
 
 /** Move AUSD from the wallet into Perpl margin, opening the account on first use. */
-export async function depositAusd(pc: PublicClient, w: W, usd: number) {
+export async function depositAusd(pc: PublicClient, w: W, usd: number, onStep?: (s: string) => void) {
   const amount = toCns(usd);
+  onStep?.("Checking AUSD approval…");
+  const have = await pc.readContract({ address: AUSD.address, abi: erc20Abi, functionName: "allowance", args: [w.account.address, PERPL_EXCHANGE] });
+  if (have < amount) onStep?.("Step 1 of 2 · approving AUSD for Perpl…");
   const approve = await ensureAllowance(pc, w, amount);
   const acct = await readAccount(pc, w.account.address);
+  onStep?.(`${approve ? "Step 2 of 2 · " : ""}${acct ? "depositing into" : "opening your account on"} Perpl…`);
   const tx = await send(pc, w, {
     address: PERPL_EXCHANGE,
     abi: exchangeAbi,
@@ -199,7 +203,8 @@ export async function depositAusd(pc: PublicClient, w: W, usd: number) {
   return { approve, tx, created: !acct };
 }
 
-export async function withdrawAusd(pc: PublicClient, w: W, usd: number) {
+export async function withdrawAusd(pc: PublicClient, w: W, usd: number, onStep?: (s: string) => void) {
+  onStep?.("Withdrawing from Perpl to your wallet…");
   return send(pc, w, { address: PERPL_EXCHANGE, abi: exchangeAbi, functionName: "withdrawCollateral", args: [toCns(usd)] } as never);
 }
 

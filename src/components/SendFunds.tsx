@@ -10,6 +10,8 @@ import { useMera, publicClient } from "@/lib/wallet/mera";
 import { AUSD } from "@/lib/monad";
 import { qty, usd } from "@/lib/fmt";
 import { TxLink } from "./TxLink";
+import { radio } from "@/lib/radio";
+import { explainError } from "./ActionStatus";
 
 const GAS_KEEP = 0.02; // MON kept back so the send itself can pay gas
 
@@ -44,12 +46,15 @@ export function SendFunds() {
       }
       const rc = await publicClient.waitForTransactionReceipt({ hash, timeout: 30_000 });
       if (rc.status !== "success") throw new Error("transfer reverted");
-      setSent((s) => [{ hash, text: `Sent ${token === "AUSD" ? usd(n) + " AUSD" : qty(n, 4) + " MON"} to ${dest.slice(0, 6)}…${dest.slice(-4)}` }, ...s]);
+      const text = `Sent ${token === "AUSD" ? usd(n) + " AUSD" : qty(n, 4) + " MON"} to ${dest.slice(0, 6)}…${dest.slice(-4)}`;
+      setSent((s) => [{ hash, text }, ...s]);
+      radio({ kind: "wallet", tone: "good", title: `✓ ${text}`, body: "Settled on Monad.", tx: hash });
       setAmt("");
       await mera.refresh();
     } catch (e) {
-      const m = e instanceof Error ? (e as { shortMessage?: string }).shortMessage || e.message : String(e);
-      setErr(m.split("\n")[0]);
+      const x = explainError(e);
+      setErr(x.hint ? `${x.message} ${x.hint}` : x.message);
+      radio({ kind: "wallet", tone: "warn", title: "Send didn't go through", body: x.hint ? `${x.message} ${x.hint}` : x.message });
     } finally {
       setBusy(false);
     }
@@ -99,13 +104,13 @@ export function SendFunds() {
       </p>
       {err && <p className="mt-2 text-sm text-pink">{err}</p>}
       <button className="btn btn-primary mt-3 w-full" disabled={busy || !okTo || !(n > 0)} onClick={() => void send()}>
-        {busy ? "Sending on Monad…" : `Send ${token}`}
+        {busy ? "Sending on Monad… (confirming)" : `Send ${token}`}
       </button>
       {sent.length > 0 && (
         <div className="mt-3 space-y-1">
           {sent.map((x) => (
             <div key={x.hash} className="flex justify-between gap-2 text-xs">
-              <span className="text-lavender">{x.text}</span>
+              <span className="text-cyan">✓ {x.text}</span>
               <TxLink hash={x.hash} />
             </div>
           ))}

@@ -45,6 +45,8 @@ type MoneyLens = "wallet" | "history";
 
 export function Game() {
   const [tab, setTab] = useState<AppTab>("home");
+  // where the rider came from, so Spot / Money can offer the way back
+  const [from, setFrom] = useState<AppTab | null>(null);
   const [moneyLens, setMoneyLens] = useState<MoneyLens>("wallet");
   const [asset, setAsset] = useState("MON");
   const [world, setWorld] = useState<GameKey | null>(null);
@@ -78,7 +80,10 @@ export function Game() {
   }, [world]);
 
   const go = useCallback((t: AppTab) => {
-    setTab(t);
+    setTab((cur) => {
+      if (t !== cur) setFrom(t === "spot" || t === "money" ? cur : null);
+      return t;
+    });
     window.scrollTo({ top: 0 });
   }, []);
   const openMoney = (lens: MoneyLens) => {
@@ -195,6 +200,13 @@ export function Game() {
       )}
 
       <main className="pb-28 lg:pb-10">
+        {from && from !== tab && (tab === "spot" || tab === "money") && (
+          <div className="mx-auto w-full max-w-5xl px-4 pt-2">
+            <button onClick={() => go(from)} className="display flex items-center gap-2 border-2 border-papaya bg-papaya/10 px-3 py-2 text-[11px] font-black uppercase text-papaya hover:bg-papaya hover:text-ink">
+              ← back to {from === "home" ? "play" : from}
+            </button>
+          </div>
+        )}
         {tab === "home" && (
           <div className="relative w-full px-4 pt-2">
             <PitLane />

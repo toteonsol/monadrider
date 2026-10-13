@@ -104,7 +104,7 @@ export async function quote(user: `0x${string}`, tokenIn: SpotToken, tokenOut: S
 type W = WalletClient<Transport, Chain, Account>;
 
 /** Execute a quote: approve the Flow entrypoint for ERC-20 input, then swap. */
-export async function swap(pc: PublicClient, w: W, q: KuruQuote) {
+export async function swap(pc: PublicClient, w: W, q: KuruQuote, onStep?: (s: string) => void) {
   const tIn = TOKENS[q.tokenIn];
   const owner = w.account.address;
   let approveHash: `0x${string}` | undefined;
@@ -112,11 +112,13 @@ export async function swap(pc: PublicClient, w: W, q: KuruQuote) {
     const amount = parseUnits(q.amountIn.toFixed(tIn.decimals), tIn.decimals);
     const have = await pc.readContract({ address: tIn.address, abi: erc20Abi, functionName: "allowance", args: [owner, q.to] });
     if (have < amount) {
+      onStep?.("Step 1 of 2 · approving AUSD for Kuru…");
       const gas = await pc.estimateContractGas({ address: tIn.address, abi: erc20Abi, functionName: "approve", args: [q.to, amount], account: w.account });
       approveHash = await w.writeContract({ address: tIn.address, abi: erc20Abi, functionName: "approve", args: [q.to, amount], gas: (gas * 12n) / 10n });
       await pc.waitForTransactionReceipt({ hash: approveHash });
     }
   }
+  onStep?.(approveHash ? "Step 2 of 2 · swapping on Kuru's order book…" : "Swapping on Kuru's order book…");
   const gas = await pc.estimateGas({ account: w.account, to: q.to, data: q.data, value: q.value });
   const hash = await w.sendTransaction({ to: q.to, data: q.data, value: q.value, gas: (gas * 13n) / 10n });
   const receipt = await pc.waitForTransactionReceipt({ hash, timeout: 30_000 });

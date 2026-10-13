@@ -13,7 +13,7 @@ import { useSyncExternalStore } from "react";
 
 export interface Notice {
   id: string;
-  kind: "opportunity" | "ride" | "tip";
+  kind: "opportunity" | "ride" | "tip" | "wallet";
   tone: "good" | "warn" | "info";
   title: string;
   body: string;

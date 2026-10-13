@@ -12,6 +12,8 @@ import { useMera, publicClient } from "@/lib/wallet/mera";
 import { quote, swap, type KuruQuote, type SpotToken } from "@/lib/kuru";
 import { qty, usd } from "@/lib/fmt";
 import { TxLink } from "./TxLink";
+import { ActionStatus, explainError, type ActionState } from "./ActionStatus";
+import { radio } from "@/lib/radio";
 import { LoginCard } from "./LoginCard";
 
 type Side = "buy" | "sell";
@@ -22,8 +24,9 @@ export function SpotScreen() {
   const [amt, setAmt] = useState("5");
   const [q, setQ] = useState<KuruQuote | null>(null);
   const [quoting, setQuoting] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState("");
+  const [st, setSt] = useState<ActionState>({ phase: "idle" });
+  const busy = st.phase === "busy";
+  const err = "";
   const [done, setDone] = useState<{ hash: string; text: string }[]>([]);
   const seq = useRef(0);
 
@@ -35,7 +38,6 @@ export function SpotScreen() {
   // quote as the rider types (debounced, Kuru allows ~1 req/s)
   useEffect(() => {
     setQ(null);
-    setErr("");
     if (!mera.address || !(n > 0)) return;
     const my = ++seq.current;
     const t = setTimeout(async () => {
@@ -44,7 +46,7 @@ export function SpotScreen() {
         const r = await quote(mera.address!, tokenIn, tokenOut, n);
         if (my === seq.current) setQ(r);
       } catch (e) {
-        if (my === seq.current) setErr(e instanceof Error ? e.message : String(e));
+        if (my === seq.current) setSt({ phase: "error", message: e instanceof Error ? e.message : String(e), hint: "Kuru couldn't price this size right now. Try a smaller amount or again in a moment." });
       } finally {
         if (my === seq.current) setQuoting(false);
       }
@@ -54,30 +56,28 @@ export function SpotScreen() {
 
   async function execute() {
     if (!q || !mera.wallet) return;
-    if (Date.now() - q.at > 20_000) {
-      setErr("Quote is stale. Edit the amount to refresh it.");
-      return;
-    }
-    if (n > have + 1e-9) {
-      setErr(side === "buy" ? "Not enough AUSD." : "Not enough MON (0.05 is kept back for gas).");
-      return;
-    }
-    setBusy(true);
-    setErr("");
+    if (Date.now() - q.at > 20_000) return setSt({ phase: "error", message: "That quote is over 20 seconds old.", hint: "Tap the amount again to refresh it." });
+    if (n > have + 1e-9)
+      return setSt({ phase: "error", message: side === "buy" ? "Not enough AUSD." : "Not enough MON.", hint: side === "buy" ? "Lower the amount, or tap Max." : "0.05 MON is kept back for gas." });
+    setSt({ phase: "busy", step: "Preparing the swap…" });
+    const before = { mon: mera.balances?.mon ?? 0, ausd: mera.balances?.ausd ?? 0 };
     try {
-      const r = await swap(publicClient, mera.wallet, q);
-      setDone((d) => [
-        { hash: r.hash, text: `${side === "buy" ? "Bought" : "Sold"} ${side === "buy" ? qty(q.out, 2) + " MON" : qty(n, 2) + " MON"} for ${side === "buy" ? usd(n) : usd(q.out)}` },
-        ...(r.approveHash ? [{ hash: r.approveHash, text: "Approved AUSD for Kuru" }] : []),
-        ...d,
-      ]);
-      setAmt("");
+      const r = await swap(publicClient, mera.wallet, q, (t) => setSt({ phase: "busy", step: t }));
+      const title = side === "buy" ? `Bought ${qty(q.out, 2)} MON for ${usd(n)}` : `Sold ${qty(n, 2)} MON for ${usd(q.out)}`;
       await mera.refresh();
+      setSt({
+        phase: "done",
+        title,
+        lines: [`Settled on Kuru's order book in one Monad block.`, `Wallet before: ${usd(before.ausd)} AUSD · ${qty(before.mon, 3)} MON`],
+        txs: [...(r.approveHash ? [{ label: "Approve AUSD", hash: r.approveHash }] : []), { label: "Swap", hash: r.hash }],
+      });
+      setDone((d) => [{ hash: r.hash, text: title }, ...d]);
+      radio({ kind: "wallet", tone: "good", title, body: "Spot swap on Kuru, settled on Monad. Balances are updated in Money.", tx: r.hash });
+      setAmt("");
     } catch (e) {
-      const m = e instanceof Error ? (e as { shortMessage?: string }).shortMessage || e.message : String(e);
-      setErr(m.split("\n")[0]);
-    } finally {
-      setBusy(false);
+      const x = explainError(e);
+      setSt({ phase: "error", ...x });
+      radio({ kind: "wallet", tone: "warn", title: "Swap didn't go through", body: x.hint ? `${x.message} ${x.hint}` : x.message });
     }
   }
 
@@ -145,9 +145,14 @@ export function SpotScreen() {
                 <span className="label absolute right-3 top-1/2 -translate-y-1/2">{tokenIn}</span>
               </div>
               <div className="mt-2 flex gap-2">
-                {(side === "buy" ? [5, 10, 25] : [100, 500, 1000]).map((v) => (
-                  <button key={v} className="btn btn-ghost flex-1 !py-2" onClick={() => setAmt(String(v))}>
-                    {side === "buy" ? `$${v}` : `${v}`}
+                {[0.25, 0.5, 1].map((f) => (
+                  <button
+                    key={f}
+                    className="btn btn-ghost flex-1 !py-2"
+                    disabled={have <= 0}
+                    onClick={() => setAmt(side === "buy" ? (Math.floor(have * f * 100) / 100).toFixed(2) : (Math.floor(have * f * 1000) / 1000).toFixed(3))}
+                  >
+                    {f === 1 ? "max" : `${f * 100}%`}
                   </button>
                 ))}
               </div>
@@ -173,8 +178,9 @@ export function SpotScreen() {
 
             {err && <p className="mt-2 text-sm text-pink">{err}</p>}
             <button className="btn btn-primary glow mt-4 w-full !py-4" disabled={!q || busy || quoting} onClick={() => void execute()}>
-              {busy ? "Swapping on Monad…" : side === "buy" ? "Buy MON" : "Sell MON"}
+              {busy ? "Working on Monad…" : side === "buy" ? "Buy MON" : "Sell MON"}
             </button>
+            <ActionStatus s={st} onClear={() => setSt({ phase: "idle" })} />
           </>
         )}
 

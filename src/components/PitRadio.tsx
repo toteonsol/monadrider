@@ -12,7 +12,7 @@ const ago = (t: number) => {
   return s < 60 ? "now" : s < 3600 ? `${Math.floor(s / 60)}m` : `${Math.floor(s / 3600)}h`;
 };
 const toneCls = (n: Notice) => (n.tone === "good" ? "border-chart text-chart" : n.tone === "warn" ? "border-blood text-blood" : "border-papaya text-papaya");
-const kindLabel = { opportunity: "on Perpl now", ride: "your ride", tip: "pit tip" } as const;
+const kindLabel = { opportunity: "on Perpl now", ride: "your ride", tip: "pit tip", wallet: "your wallet" } as const;
 
 export function RadioBell({ onRide }: { onRide: (asset: string) => void }) {
   const { notices, unread } = useRadio();
