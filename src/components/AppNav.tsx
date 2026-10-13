@@ -202,7 +202,7 @@ export default function AppNav({
             <Icon name="lab" size={13} /> {tr("Guide")}
           </a>
           <a
-            href="https://github.com/"
+            href="https://github.com/toteonsol/monadrider"
             target="_blank"
             rel="noreferrer"
             className="display flex min-h-[32px] flex-1 items-center justify-center gap-1.5 border border-steel text-[11px] font-bold uppercase tracking-wide text-flat transition hover:border-chart hover:text-chart"

@@ -3,7 +3,7 @@
 **Project:** Ride the Now · Monad edition
 **Track:** Onchain Finance & Trading
 **Bounties:** Agora (Best Mobile Trading App) · Kuru (Consumer Trading App) · Perpl (Best Use of Perpl's API)
-**Repo:** _GitHub URL_ · **Live app:** _URL_ · **Demo:** _YouTube/Loom URL_ · **Agora cut:** _URL_
+**Repo:** https://github.com/toteonsol/monadrider · **Live app:** https://ride-the-now-monad.vercel.app · **Demo:** _YouTube/Loom URL_ · **Agora cut:** _URL_
 
 ## Short description
 

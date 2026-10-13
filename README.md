@@ -7,7 +7,7 @@ A racing, surfing and rhythm game where every lane you hold is a real, capped pe
 - **Track:** Onchain Finance & Trading
 - **Bounties:** Agora (best mobile trading app), Kuru (consumer trading app), Perpl (best use of Perpl's API / automation)
 - **Licence:** AGPL-3.0
-- **Live app:** https://ride-the-now-monad.vercel.app · **Demo video:** _added at submission_
+- **Live app:** https://ride-the-now-monad.vercel.app · **Repo:** https://github.com/toteonsol/monadrider · **Demo video:** _added at submission_
 
 ---
 
