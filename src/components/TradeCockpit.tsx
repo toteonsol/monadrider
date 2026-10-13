@@ -154,6 +154,11 @@ export function TradeCockpit({
                 </button>
               ))}
             </div>
+            {b.region.blocked && (
+              <p className="mt-3 text-[12.5px] text-blood">
+                Perpl isn&apos;t available in your region ({b.region.country}), so live trading is off here. Practice is open to everyone.
+              </p>
+            )}
             {b.armError && <p className="mt-3 text-[12.5px] text-blood">{b.armError}</p>}
             <div className="mt-4 grid gap-2 min-[560px]:grid-cols-2">
               <button

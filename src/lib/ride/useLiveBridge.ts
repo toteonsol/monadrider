@@ -80,6 +80,15 @@ export function useLiveBridge(asset: string) {
 
   useEffect(() => setRideAsset(asset), [asset]);
 
+  // Perpl doesn't serve some regions; live trading honours its list on every route
+  const [region, setRegion] = useState<{ country: string | null; blocked: boolean }>({ country: null, blocked: false });
+  useEffect(() => {
+    fetch("/api/geo", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((g: { country: string | null; blocked: boolean }) => setRegion({ country: g.country, blocked: !!g.blocked }))
+      .catch(() => {});
+  }, []);
+
   const marginNeeded = rails.clipUsd / LEVERAGE;
   const viaKey = route === "perpl";
   const ready = viaKey
@@ -95,11 +104,12 @@ export function useLiveBridge(asset: string) {
         account: !!perpl.account,
         margin: (perpl.account?.free ?? 0) >= marginNeeded * 1.2,
       };
-  const canArm = ready.wallet && ready.gas && ready.account && ready.margin && !!feed.market;
+  const canArm = ready.wallet && ready.gas && ready.account && ready.margin && !!feed.market && !region.blocked;
 
   /** Arm: build the engine and publish the refs the worlds call. */
   const arm = useCallback(async () => {
     setArmError("");
+    if (region.blocked) return setArmError(`Perpl isn't available in your region (${region.country}), so live trading is off here. Practice is open to everyone.`);
     const m = feedRef.current.market;
     if (!m) return setArmError("Waiting for the Perpl market feed.");
     let exec;
@@ -162,7 +172,7 @@ export function useLiveBridge(asset: string) {
       void e.end(feedRef.current.mid, "rider");
     };
     setArmed(true);
-  }, [mera.wallet, mera.address, perpl.account, rails, route, apiAcct.key, apiAcct.status, apiAcct.owner]);
+  }, [mera.wallet, mera.address, perpl.account, rails, route, apiAcct.key, apiAcct.status, apiAcct.owner, region]);
 
   const disarm = useCallback(async () => {
     const e = engine.current;
@@ -219,6 +229,7 @@ export function useLiveBridge(asset: string) {
     canArm,
     ready,
     armError,
+    region,
     mode,
     setMode,
     rails,

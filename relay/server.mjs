@@ -20,6 +20,21 @@
 import http from "node:http";
 import { WebSocketServer, WebSocket } from "ws";
 import { handleGame } from "./game.mjs";
+import { createHmac, timingSafeEqual } from "node:crypto";
+
+// Tickets from the app's /api/geo (issued only outside Perpl's geo_block list)
+const TICKET_SECRET = process.env.RELAY_TICKET_SECRET || "";
+function validTicket(t) {
+  if (!TICKET_SECRET) return true; // local development
+  const [exp, mac] = String(t || "").split(".");
+  if (!exp || !mac || Number(exp) < Date.now()) return false;
+  const want = createHmac("sha256", TICKET_SECRET).update(exp).digest("base64url");
+  try {
+    return timingSafeEqual(Buffer.from(mac), Buffer.from(want));
+  } catch {
+    return false;
+  }
+}
 
 const PORT = Number(process.env.PORT || 8787);
 const MAINNET = "wss://app.perpl.xyz";
@@ -46,6 +61,11 @@ server.on("upgrade", (req, socket, head) => {
     socket.destroy();
     return;
   }
+  if (pathname === "/ws/v1/trading" && !validTicket(new URL(req.url || "/", "http://relay").searchParams.get("ticket"))) {
+    socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
+    socket.destroy();
+    return;
+  }
   const origin = req.headers.origin || "";
   if (ALLOWED.length && !ALLOWED.includes(origin)) {
     socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
@@ -60,6 +80,11 @@ wss.on("connection", (client, req) => {
   const testnet = url.searchParams.get("testnet") === "true";
   // No Origin header on this side: Perpl sees a server-to-server connection.
   const upstream = new WebSocket((testnet ? TESTNET : MAINNET) + url.pathname);
+  upstream.on("unexpected-response", (_q, res) => {
+    try {
+      client.send(JSON.stringify({ mt: 0, relay: "upstream-refused", status: res.statusCode }));
+    } catch {}
+  });
   const queue = [];
 
   upstream.on("open", () => {

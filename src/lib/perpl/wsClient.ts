@@ -115,10 +115,24 @@ export class PerplWs {
     return this.ready;
   }
 
-  private connect(): Promise<void> {
+  private async connect(): Promise<void> {
+    // Perpl doesn't serve some regions; honour that, and get the relay ticket
+    let ticket = "";
+    try {
+      const g = (await fetch("/api/geo", { cache: "no-store" }).then((r) => r.json())) as { blocked?: boolean; country?: string; ticket?: string | null };
+      if (g.blocked) throw new Error(`REGION ${g.country}`);
+      ticket = g.ticket ?? "";
+    } catch (e) {
+      if (e instanceof Error && e.message.startsWith("REGION")) throw new Error(`Perpl isn't available in your region (${e.message.slice(7)}).`);
+    }
+    return this.open(ticket);
+  }
+
+  private open(ticket: string): Promise<void> {
     return new Promise((resolve, reject) => {
       if (typeof WebSocket === "undefined") return reject(new Error("no WebSocket"));
-      const ws = new WebSocket(`${PERPL.wsUrl}/ws/v1/trading${PERPL.wsQuery}`);
+      const q = [PERPL.wsQuery.replace(/^\?/, ""), ticket ? `ticket=${encodeURIComponent(ticket)}` : ""].filter(Boolean).join("&");
+      const ws = new WebSocket(`${PERPL.wsUrl}/ws/v1/trading${q ? `?${q}` : ""}`);
       this.ws = ws;
       let settled = false;
       let firstFrame = ""; // what Perpl said before closing, for a useful error
