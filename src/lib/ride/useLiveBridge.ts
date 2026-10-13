@@ -142,6 +142,19 @@ export function useLiveBridge(asset: string) {
       for (; seen < s.fills.length; seen++) {
         const f = s.fills[seen];
         pushRideTx(f.txid);
+        const fmtPx = f.px >= 100 ? f.px.toLocaleString("en-US", { maximumFractionDigits: 1 }) : f.px.toPrecision(5);
+        if (f.reason !== "stop" && f.reason !== "take")
+          radio({
+            kind: "ride",
+            tone: f.action === "close" ? (f.pnl != null && f.pnl < 0 ? "warn" : "good") : "info",
+            title:
+              f.action === "close"
+                ? `Closed ${m.name} @ ${fmtPx}${f.pnl != null ? ` · ${f.pnl >= 0 ? "+" : "−"}$${Math.abs(f.pnl).toFixed(2)}` : ""}`
+                : `${f.action === "open-long" ? "LONG" : "SHORT"} ${f.size.toLocaleString("en-US", { maximumFractionDigits: 5 })} ${m.name} @ ${fmtPx}`,
+            body: `${autopilot ? "Passenger" : "You"} · $${f.notional.toFixed(2)} on Perpl · settled on Monad`,
+            asset: m.name,
+            tx: f.txid,
+          });
         if (f.reason === "stop")
           radio({ kind: "ride", tone: "warn", title: `Stop hit on ${m.name}`, body: `Price moved ${e.rails.stopPct}% against the position, so it closed${f.pnl != null ? ` at ${f.pnl >= 0 ? "+" : "−"}$${Math.abs(f.pnl).toFixed(2)}` : ""}. That's the rail doing its job: small loss, ride goes on.`, asset: m.name, tx: f.txid });
         else if (f.reason === "take")
@@ -153,7 +166,7 @@ export function useLiveBridge(asset: string) {
         radio({
           kind: "ride",
           tone: rec.net >= 0 ? "good" : "warn",
-          title: `${autopilot ? "Passenger" : "Your"} ride on ${m.name}: ${rec.net >= 0 ? "+" : "−"}$${Math.abs(rec.net).toFixed(2)}`,
+          title: `${s.endReason === "end" ? "Timer · " : s.endReason === "loss-limit" ? "Max loss · " : ""}${autopilot ? "Passenger" : "Your"} ride on ${m.name} ended: ${rec.net >= 0 ? "+" : "−"}$${Math.abs(rec.net).toFixed(2)} · receipt ready`,
           body: `${rec.trades} round trips, $${Math.round(rec.volume)} volume, $${rec.fees.toFixed(2)} fees, ${rec.wipeouts} stop${rec.wipeouts === 1 ? "" : "s"}. Every fill is on the receipt with its Monad tx.`,
           asset: m.name,
           tx: rec.fills.find((x) => x.txid)?.txid,
@@ -234,13 +247,18 @@ export function useLiveBridge(asset: string) {
     void e.tick(feed.mid, mode === "passenger" ? "passenger" : "player");
   }, [feed.series, feed.mid, feed.tape, mode]);
 
-  // a ride the rails ended (timer, max loss) disarms itself
+  // a ride the rails ended (timer, max loss) leaves live mode cleanly, so the
+  // receipt shows and the cockpit is ready for the next one
   useEffect(() => {
     if (armed && state?.status === "ended") {
       setTargetRef.current = null;
       flattenRef.current = null;
+      engine.current = null;
+      setArmed(false);
+      void perpl.refresh();
+      void mera.refresh();
     }
-  }, [armed, state?.status]);
+  }, [armed, state?.status, perpl, mera]);
 
   // never leave a position open behind a closed tab or screen
   useEffect(

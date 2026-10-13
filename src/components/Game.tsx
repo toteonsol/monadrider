@@ -27,6 +27,7 @@ import { ReceiptSheet } from "./ReceiptSheet";
 import { withdrawAusd } from "@/lib/perpl/onchain";
 import { publicClient } from "@/lib/wallet/mera";
 import { RadioBell, RadioToasts } from "./PitRadio";
+import { LiveChip } from "./LiveChip";
 import { useOpportunities } from "@/lib/useOpportunities";
 import { useLiveBridge } from "@/lib/ride/useLiveBridge";
 import { career, type Career } from "@/lib/game/rideLog";
@@ -150,6 +151,7 @@ export function Game() {
         )}
         {world === "surfer" && <SurfRide {...common} />}
         {world === "pulse" && <PulseRide {...common} />}
+        <LiveChip bridge={bridge} asset={asset} onRide={rideThis} />
         <RadioToasts onRide={rideThis} ridesOnly />
       </div>
     );
