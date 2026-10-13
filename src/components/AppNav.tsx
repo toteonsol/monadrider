@@ -196,7 +196,7 @@ export default function AppNav({
       {showHelp && (
         <div className="hidden lg:mt-3 lg:flex lg:gap-1.5 lg:px-1">
           <a
-            href="/about"
+            href="/guide"
             className="display flex min-h-[32px] flex-1 items-center justify-center gap-1.5 border border-steel text-[11px] font-bold uppercase tracking-wide text-flat transition hover:border-sky hover:text-sky"
           >
             <Icon name="lab" size={13} /> {tr("Guide")}

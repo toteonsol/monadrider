@@ -10,6 +10,7 @@ import type { LiveBridge } from "@/lib/ride/useLiveBridge";
 import { RAIL_LIMITS, netPnl } from "@/lib/ride/engine";
 import { fetchPerplContext } from "@/lib/perpl/config";
 import { LiveTape } from "./LiveTape";
+import { PerplKeyGuide } from "./PerplKeyGuide";
 import { TxLink } from "./TxLink";
 import { price, signedUsd, usd } from "@/lib/fmt";
 
@@ -250,8 +251,10 @@ function TradeFrom({ bridge: b }: { bridge: LiveBridge }) {
   const [apiKey, setApiKey] = useState("");
   const [secret, setSecret] = useState("");
   const [busy, setBusy] = useState(false);
+  const [guide, setGuide] = useState(false);
   return (
     <div className="border-2 border-steel bg-ink-soft">
+      {guide && <PerplKeyGuide onClose={() => setGuide(false)} />}
       <div className="grid grid-cols-2">
         {(
           [
@@ -287,6 +290,13 @@ function TradeFrom({ bridge: b }: { bridge: LiveBridge }) {
             </div>
           ) : (
             <div className="space-y-2">
+              <button
+                onClick={() => setGuide(true)}
+                className="gp-btn display flex w-full items-center justify-between border-2 border-papaya bg-papaya/10 px-3 py-2.5 text-left text-[12px] font-black uppercase text-papaya hover:bg-papaya hover:text-ink"
+              >
+                <span>new to this? the 4-step guide</span>
+                <span>→</span>
+              </button>
               <p className="text-[12px] leading-snug text-flat">
                 On{" "}
                 <a href="https://app.perpl.xyz/apikeys" target="_blank" rel="noreferrer" className="text-sky underline">
