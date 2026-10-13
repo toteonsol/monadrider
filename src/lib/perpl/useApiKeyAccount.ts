@@ -55,7 +55,22 @@ export function useApiKeyAccount(): ApiKeyAccount {
       setKey(null);
       setStatus("error");
       const m = e instanceof Error ? e.message : String(e);
-      setError(/closed before auth|timed out/.test(m) ? "Perpl refused this key. Check the key and secret, and that the key has the trade scope." : m);
+      const detail = m.replace(/^Perpl WS /, "");
+      if (/code 3401/.test(m)) {
+        setError(
+          "Perpl says unauthorized (3401): the API key and the secret don't belong together, or the key was revoked or has expired. The first box needs the API key itself (not the public key), the second box the hex private key from the same key.",
+        );
+        return null;
+      }
+      if (/code 3403/.test(m)) {
+        setError("Perpl says this key isn't allowed to trade (3403). Create a new key with the trade scope.");
+        return null;
+      }
+      setError(
+        /closed before auth|timed out/.test(m)
+          ? `Perpl refused this sign-in. Most often the first box holds the public key instead of the API key, or the key is read-only. (Perpl said: ${detail})`
+          : m,
+      );
       return null;
     }
   }, []);

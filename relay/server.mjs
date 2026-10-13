@@ -83,7 +83,15 @@ wss.on("connection", (client, req) => {
     } catch {}
   };
   client.on("close", closeBoth);
-  upstream.on("close", closeBoth);
+  // pass Perpl's own close code and reason through, so the app can say why
+  upstream.on("close", (code, reason) => {
+    const sendable = code === 1000 || (code >= 3000 && code <= 4999);
+    try {
+      if (sendable) client.close(code, String(reason).slice(0, 120));
+      else client.close();
+    } catch {}
+    closeBoth();
+  });
   client.on("error", closeBoth);
   upstream.on("error", closeBoth);
 });

@@ -121,6 +121,7 @@ export class PerplWs {
       const ws = new WebSocket(`${PERPL.wsUrl}/ws/v1/trading${PERPL.wsQuery}`);
       this.ws = ws;
       let settled = false;
+      let firstFrame = ""; // what Perpl said before closing, for a useful error
       const authTimer = setTimeout(() => {
         if (!settled) {
           settled = true;
@@ -145,6 +146,7 @@ export class PerplWs {
         } catch {
           return;
         }
+        if (!settled && !firstFrame) firstFrame = JSON.stringify(m).slice(0, 160);
         this.dispatch(m);
         // first WalletSnapshot (mt19) means we're authed + have accountId
         if (!settled && m.mt === MT.WALLET_SNAPSHOT) {
@@ -161,7 +163,8 @@ export class PerplWs {
         if (!settled) {
           settled = true;
           clearTimeout(authTimer);
-          reject(new Error(`Perpl WS closed before auth (code ${ev.code})`));
+          const why = [ev.reason, firstFrame].filter(Boolean).join(" · ");
+          reject(new Error(`Perpl WS closed before auth (code ${ev.code})${why ? ` · ${why}` : ""}`));
         }
         if (!this.closed) this.scheduleReconnect();
       };
