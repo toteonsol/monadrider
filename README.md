@@ -98,7 +98,17 @@ Every live ride ends with a **P&L and risk receipt**: net, volume, fees, max dra
 
 This project deploys no contracts of its own. It is a client of the contracts above.
 
-**Transaction hashes from the demo:** _added at submission (account open, deposit, live carves, Passenger run, Kuru swap, withdraw)._
+**Transaction hashes (mainnet, from the app):**
+
+| What | Monad tx |
+|---|---|
+| Passkey wallet (Mera) opens a Perpl account with AUSD (`createAccount`) | [`0x9511a628…1e7a`](https://monadscan.com/tx/0x9511a628e61027ee46d4246d55377d84ff3dad05445ab433b3c15cf4c4971e7a) |
+| Withdraw AUSD from Perpl back to the wallet (`withdrawCollateral`) | [`0x8a1a2ec4…e014`](https://monadscan.com/tx/0x8a1a2ec48c3a344b473dc6975bb3df879b70e895812e675c16daa693cdbce014) |
+| Deposit AUSD again (`depositCollateral`) | [`0x963bb3da…feda`](https://monadscan.com/tx/0x963bb3dac1c54ecbebd0e5c77dfb4c7f71db5199c278cb331b0e973eacb2feda) |
+| Passenger opens a BTC position, sent from the passkey wallet (`execOrder`) | [`0x6176e727…4176`](https://monadscan.com/tx/0x6176e727112cd4495ae6f019f3eb7aa1d55995f0de8f2a813092862493ea4176) |
+| Passenger closes it (`execOrder`) | [`0x37465d43…d4d7`](https://monadscan.com/tx/0x37465d43aa2ad0e024a5b34df22959dbf7bfebd3ec44f4a0340f2cc622f4d4d7) |
+
+Passkey wallet: [`0x7fa5861fec8aa0cfce0e504cbd0ff297c32b236a`](https://monadscan.com/address/0x7fa5861fec8aa0cfce0e504cbd0ff297c32b236a) (Perpl account #5483). Its Kuru MON → AUSD swap is on the same MonadScan page. Live rides from an existing Perpl account (API-key route) were also run; those orders are forwarded onchain by Perpl.
 
 ---
 
