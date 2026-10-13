@@ -33,6 +33,7 @@ import { setRideAddress } from "./session";
 import { saveReceipt, type Receipt } from "./receipts";
 import { submitLiveRide } from "@/lib/game/backend";
 import { radio } from "@/lib/radio";
+import { logActivity } from "@/lib/activity";
 
 export type DriveMode = "turbo" | "passenger";
 /** where live orders come from: the passkey wallet (orders sent onchain from
@@ -81,6 +82,18 @@ export function useLiveBridge(asset: string) {
   feedRef.current = feed;
   const modeRef = useRef(mode);
   modeRef.current = mode;
+  const [sitOut, setSitOutState] = useState(false);
+  const sitOutRef = useRef(false);
+  const setSitOut = useCallback((v: boolean) => {
+    sitOutRef.current = v;
+    setSitOutState(v);
+    if (v) engine.current?.setTarget(0);
+    radio(
+      v
+        ? { kind: "tip", tone: "info", title: "Sitting out on the line", body: "Your position is closed and new lanes won't trade until you tap Back in. The world keeps playing as practice." }
+        : { kind: "tip", tone: "good", title: "Back in", body: "Lane changes trade again." },
+    );
+  }, []);
 
   useEffect(() => setRideAsset(asset), [asset]);
 
@@ -136,6 +149,7 @@ export function useLiveBridge(asset: string) {
     const e = new RideEngine(exec, rails);
     let seen = 0;
     const autopilot = modeRef.current === "passenger";
+    const viaKeyAtArm = route === "perpl";
     e.subscribe((s) => {
       setState(s);
       // collect every fill's tx before a final submit can take the trail
@@ -163,6 +177,7 @@ export function useLiveBridge(asset: string) {
       if (s.status === "ended" && engine.current === e) {
         const rec = saveReceipt(s, { asset: m.name, mode: "live", autopilot, rails: e.rails, owner, lastMid: feedRef.current.mid });
         setReceipt(rec);
+        logActivity({ kind: "ride", route: viaKeyAtArm ? "apikey" : "passkey", receipt: rec });
         radio({
           kind: "ride",
           tone: rec.net >= 0 ? "good" : "warn",
@@ -214,8 +229,11 @@ export function useLiveBridge(asset: string) {
     passenger.current = new Passenger();
     e.start();
     engine.current = e;
+    sitOutRef.current = false;
+    setSitOutState(false);
     setTargetRef.current = (side: number) => {
       if (modeRef.current === "passenger") return; // the autopilot steers
+      if (sitOutRef.current) return; // sitting out: lanes don't trade
       e.setTarget((side > 0 ? 1 : side < 0 ? -1 : 0) as Band);
     };
     flattenRef.current = () => {
@@ -239,7 +257,7 @@ export function useLiveBridge(asset: string) {
   useEffect(() => {
     const e = engine.current;
     if (!e || e.state.status !== "riding" || !feed.mid) return;
-    if (mode === "passenger") {
+    if (mode === "passenger" && !sitOutRef.current) {
       const sig = readSignal(feed.series, feed.tape);
       const want = passenger.current.decide(sig.signal, e.state.band);
       if (want !== e.state.target) e.setTarget(want);
@@ -315,6 +333,8 @@ export function useLiveBridge(asset: string) {
 
   return {
     feed,
+    sitOut,
+    setSitOut,
     venuePos,
     closeNow,
     flip,

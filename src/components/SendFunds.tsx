@@ -11,6 +11,7 @@ import { AUSD } from "@/lib/monad";
 import { qty, usd } from "@/lib/fmt";
 import { TxLink } from "./TxLink";
 import { radio } from "@/lib/radio";
+import { logActivity } from "@/lib/activity";
 import { explainError } from "./ActionStatus";
 
 const GAS_KEEP = 0.02; // MON kept back so the send itself can pay gas
@@ -49,6 +50,7 @@ export function SendFunds() {
       const text = `Sent ${token === "AUSD" ? usd(n) + " AUSD" : qty(n, 4) + " MON"} to ${dest.slice(0, 6)}…${dest.slice(-4)}`;
       setSent((s) => [{ hash, text }, ...s]);
       radio({ kind: "wallet", tone: "good", title: `✓ ${text}`, body: "Settled on Monad.", tx: hash });
+      logActivity({ kind: "send", route: "passkey", token, amount: n, to: dest, txs: [{ label: "Send", hash }] });
       setAmt("");
       await mera.refresh();
     } catch (e) {

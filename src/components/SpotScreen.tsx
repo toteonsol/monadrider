@@ -14,6 +14,7 @@ import { qty, usd } from "@/lib/fmt";
 import { TxLink } from "./TxLink";
 import { ActionStatus, explainError, type ActionState } from "./ActionStatus";
 import { radio } from "@/lib/radio";
+import { logActivity } from "@/lib/activity";
 import { LoginCard } from "./LoginCard";
 
 type Side = "buy" | "sell";
@@ -73,6 +74,7 @@ export function SpotScreen() {
       });
       setDone((d) => [{ hash: r.hash, text: title }, ...d]);
       radio({ kind: "wallet", tone: "good", title, body: "Spot swap on Kuru, settled on Monad. Balances are updated in Money.", tx: r.hash });
+      logActivity({ kind: "swap", route: "passkey", title, side, amountIn: n, out: q.out, txs: [...(r.approveHash ? [{ label: "Approve AUSD", hash: r.approveHash }] : []), { label: "Swap", hash: r.hash }] });
       setAmt("");
     } catch (e) {
       const x = explainError(e);

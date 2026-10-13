@@ -11,6 +11,7 @@ import { RAIL_LIMITS, netPnl } from "@/lib/ride/engine";
 import { fetchPerplContext } from "@/lib/perpl/config";
 import { LiveTape } from "./LiveTape";
 import { PerplKeyGuide } from "./PerplKeyGuide";
+import { PitWall } from "./PitWall";
 import { TxLink } from "./TxLink";
 import { price, signedUsd, usd } from "@/lib/fmt";
 
@@ -245,6 +246,7 @@ export function TradeCockpit({
       </div>
 
       <aside className="space-y-4">
+        <PitWall bridge={b} asset={asset} onSwitch={(a) => { if (!b.armed) setAsset(a); else void b.disarm().then(() => setAsset(a)); }} />
         {b.mode === "passenger" && <Signal v={b.signal.signal} trend={b.signal.trend} flow={b.signal.flow} />}
         <LiveTape tape={b.feed.tape} asset={asset} />
       </aside>

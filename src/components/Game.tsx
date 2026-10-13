@@ -22,13 +22,15 @@ import { NowCard } from "./NowCard";
 import { TradeCockpit } from "./TradeCockpit";
 import { MoneyScreen } from "./MoneyScreen";
 import { SpotScreen } from "./SpotScreen";
-import { History } from "./History";
+import { Logbook } from "./Logbook";
 import { ReceiptSheet } from "./ReceiptSheet";
 import { withdrawAusd } from "@/lib/perpl/onchain";
 import { publicClient } from "@/lib/wallet/mera";
 import { RadioBell, RadioToasts } from "./PitRadio";
 import { LiveChip } from "./LiveChip";
+import { PitWall } from "./PitWall";
 import { useOpportunities } from "@/lib/useOpportunities";
+import { radio } from "@/lib/radio";
 import { useLiveBridge } from "@/lib/ride/useLiveBridge";
 import { career, type Career } from "@/lib/game/rideLog";
 import { fetchStreak } from "@/lib/game/backend";
@@ -126,6 +128,12 @@ export function Game() {
     if (!bridge.armed) setAsset(a);
     go("trade");
   };
+  // "switch" from the pit wall: mid-ride it ends the ride first (flattening), then switches
+  const switchRoad = async (a: string) => {
+    if (bridge.armed) await bridge.disarm();
+    setAsset(a);
+    radio({ kind: "tip", tone: "info", title: `Switched to ${a}`, body: "Go live again from Trade, or keep riding practice on the new road." });
+  };
 
   /* ── a world is open: it owns the screen ── */
   if (world) {
@@ -152,6 +160,9 @@ export function Game() {
         {world === "surfer" && <SurfRide {...common} />}
         {world === "pulse" && <PulseRide {...common} />}
         <LiveChip bridge={bridge} asset={asset} onRide={rideThis} />
+        <div className="pointer-events-none fixed right-3 top-[calc(212px+var(--safe-top))] z-[93] flex flex-col items-end">
+          <PitWall bridge={bridge} asset={asset} onSwitch={(a) => void switchRoad(a)} compact />
+        </div>
         <RadioToasts onRide={rideThis} ridesOnly />
       </div>
     );
@@ -380,8 +391,8 @@ export function Game() {
         {tab === "spot" && <SpotScreen />}
         {tab === "money" &&
           (moneyLens === "history" ? (
-            <div className="mx-auto w-full max-w-lg px-4 py-4">
-              <History owner={mera.address} />
+            <div className="mx-auto w-full max-w-4xl px-4 py-4">
+              <Logbook owner={mera.address} />
             </div>
           ) : (
             <MoneyScreen goSpot={() => go("spot")} />
@@ -390,8 +401,8 @@ export function Game() {
           <div className="mx-auto w-full max-w-[1100px] px-4">
             <PointsBoard onStandings={() => setHub(true)} onPlay={() => setPicker(true)} />
             <PaddockNow onStandings={() => setHub(true)} onPlay={() => setPicker(true)} />
-            <div className="mt-6 max-w-lg">
-              <History owner={mera.address} />
+            <div className="mt-6">
+              <Logbook owner={mera.address} />
             </div>
           </div>
         )}

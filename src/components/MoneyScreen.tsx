@@ -17,10 +17,11 @@ import { addressUrl, AUSD } from "@/lib/monad";
 import { usd, qty, short } from "@/lib/fmt";
 import { TxLink } from "./TxLink";
 import { LoginCard } from "./LoginCard";
-import { History } from "./History";
+import { Logbook } from "./Logbook";
 import { SendFunds } from "./SendFunds";
 import { ActionStatus, explainError, type ActionState } from "./ActionStatus";
 import { radio } from "@/lib/radio";
+import { logActivity } from "@/lib/activity";
 
 const MIN_OPEN = 10; // Perpl's minimum to open an account, and for every deposit (AUSD)
 
@@ -33,7 +34,7 @@ export function MoneyScreen({ goSpot }: { goSpot: () => void }) {
     return (
       <div className="mx-auto w-full max-w-lg space-y-4 px-4 py-4">
         <LoginCard />
-        <History owner={null} />
+        <Logbook owner={null} />
       </div>
     );
   }
@@ -114,7 +115,7 @@ export function MoneyScreen({ goSpot }: { goSpot: () => void }) {
             <li>Withdraw back to the wallet whenever you like.</li>
           </ol>
         </section>
-        <History owner={mera.address} />
+        <Logbook owner={mera.address} />
       </div>
     </div>
   );
@@ -161,11 +162,13 @@ function PerplMargin({
           txs: [...(r.approve ? [{ label: "Approve AUSD", hash: r.approve.hash }] : []), { label: r.created ? "Open account + deposit" : "Deposit", hash: r.tx.hash }],
         });
         radio({ kind: "wallet", tone: "good", title, body: "Margin is ready on Perpl. Open Trade and go live.", tx: r.tx.hash });
+        logActivity({ kind: "deposit", route: "passkey", amount: n, created: r.created, txs: [...(r.approve ? [{ label: "Approve AUSD", hash: r.approve.hash }] : []), { label: r.created ? "Open account + deposit" : "Deposit", hash: r.tx.hash }] });
       } else {
         const r = await withdrawAusd(publicClient, mera.wallet, n, step);
         const title = `Withdrew ${usd(n)} AUSD to your wallet`;
         setSt({ phase: "done", title, lines: ["It's in this wallet now. Send it anywhere below."], txs: [{ label: "Withdraw", hash: r.hash }] });
         radio({ kind: "wallet", tone: "good", title, body: "Back in your passkey wallet.", tx: r.hash });
+        logActivity({ kind: "withdraw", route: "passkey", amount: n, txs: [{ label: "Withdraw", hash: r.hash }] });
       }
       setAmt("");
       await onDone();
