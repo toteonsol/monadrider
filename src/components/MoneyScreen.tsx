@@ -18,6 +18,7 @@ import { usd, qty, short } from "@/lib/fmt";
 import { TxLink } from "./TxLink";
 import { LoginCard } from "./LoginCard";
 import { History } from "./History";
+import { SendFunds } from "./SendFunds";
 
 const MIN_OPEN = 10; // Perpl's minimum to open an account (AUSD)
 
@@ -97,6 +98,7 @@ export function MoneyScreen({ goSpot }: { goSpot: () => void }) {
             await Promise.all([perpl.refresh(), mera.refresh()]);
           }}
         />
+        <SendFunds />
       </div>
 
       <div className="space-y-4">
