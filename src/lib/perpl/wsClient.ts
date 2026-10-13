@@ -338,6 +338,12 @@ export class PerplWs {
     return { accountId: this.accountId, free: this.balance, locked: this.locked, forwarding: this.forwarding };
   }
 
+  /** The wallet that owns this key's account, from the wallet snapshot. */
+  walletAddress(): string | null {
+    const a = (this.lastSnapshot as { addr?: unknown } | null)?.addr;
+    return typeof a === "string" ? a : null;
+  }
+
   /** Raw first wallet snapshot (diagnostics · reveals the real field nesting). */
   rawSnapshot(): unknown {
     return this.lastSnapshot;
@@ -581,6 +587,13 @@ export function peekPerplBalanceUsd(): number | null {
     if (typeof b === "number" && Number.isFinite(b) && b > 0) return b;
   }
   return null;
+}
+
+/** Forget a client (bad key, or the rider disconnected): closes its socket. */
+export function dropPerplWs(apiKey: string): void {
+  const c = clients.get(apiKey);
+  c?.disconnect();
+  clients.delete(apiKey);
 }
 
 export function getPerplWs(key: PerplKey): PerplWs {

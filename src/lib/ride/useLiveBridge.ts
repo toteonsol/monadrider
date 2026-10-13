@@ -19,6 +19,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { RideEngine, DEFAULT_RAILS, netPnl, type Band, type Rails, type RideState } from "./engine";
 import { OnchainExecutor } from "./onchainExecutor";
+import { PerplExecutor } from "./perplExecutor";
+import { useApiKeyAccount } from "@/lib/perpl/useApiKeyAccount";
+import { getPerplWs } from "@/lib/perpl/wsClient";
 import { Passenger, readSignal } from "./passenger";
 import { pushRideTx, takeRideTxids } from "./session";
 import { useMarketFeed } from "@/lib/perpl/market";
@@ -30,6 +33,9 @@ import { setRideAddress } from "./session";
 import { saveReceipt, type Receipt } from "./receipts";
 
 export type DriveMode = "turbo" | "passenger";
+/** where live orders come from: the passkey wallet (orders sent onchain from
+ *  it) or an existing Perpl account (trade-only API key, Perpl forwards) */
+export type Route = "passkey" | "perpl";
 
 export interface RealSnapshot {
   volume: number;
@@ -48,6 +54,12 @@ const LEVERAGE = 3;
 export function useLiveBridge(asset: string) {
   const mera = useMera();
   const perpl = usePerplAccount(mera.address);
+  const apiAcct = useApiKeyAccount();
+  const [route, setRoute] = useState<Route>("passkey");
+  // a connected Perpl account becomes the default route
+  useEffect(() => {
+    if (apiAcct.status === "ready") setRoute("perpl");
+  }, [apiAcct.status]);
   const feed = useMarketFeed(asset);
   const [armed, setArmed] = useState(false);
   const [mode, setMode] = useState<DriveMode>("turbo");
@@ -69,30 +81,51 @@ export function useLiveBridge(asset: string) {
   useEffect(() => setRideAsset(asset), [asset]);
 
   const marginNeeded = rails.clipUsd / LEVERAGE;
-  const ready = {
-    wallet: !!mera.address,
-    gas: (mera.balances?.mon ?? 0) >= 0.05,
-    account: !!perpl.account,
-    margin: (perpl.account?.free ?? 0) >= marginNeeded * 1.2,
-  };
+  const viaKey = route === "perpl";
+  const ready = viaKey
+    ? {
+        wallet: apiAcct.status === "ready",
+        gas: apiAcct.forwarding !== false, // Perpl pays gas when one-click trading is on
+        account: apiAcct.accountId > 0,
+        margin: apiAcct.free >= marginNeeded * 1.2,
+      }
+    : {
+        wallet: !!mera.address,
+        gas: (mera.balances?.mon ?? 0) >= 0.05,
+        account: !!perpl.account,
+        margin: (perpl.account?.free ?? 0) >= marginNeeded * 1.2,
+      };
   const canArm = ready.wallet && ready.gas && ready.account && ready.margin && !!feed.market;
 
   /** Arm: build the engine and publish the refs the worlds call. */
   const arm = useCallback(async () => {
     setArmError("");
     const m = feedRef.current.market;
-    if (!mera.wallet || !perpl.account || !m) return setArmError("Not ready yet: wallet, Perpl account and market feed are needed.");
-    const pos = await readPosition(publicClient, m, perpl.account.id).catch(() => null);
-    if (pos && pos.side !== 0) {
-      return setArmError(`You already hold a ${pos.side > 0 ? "long" : "short"} ${m.name} on Perpl. Close it first so the ride starts flat.`);
+    if (!m) return setArmError("Waiting for the Perpl market feed.");
+    let exec;
+    let owner: string | null;
+    if (route === "perpl") {
+      if (!apiAcct.key || apiAcct.status !== "ready") return setArmError("Connect your Perpl account first.");
+      const held = getPerplWs(apiAcct.key).getPosition(m.name);
+      if (held) return setArmError(`You already hold a ${held.szi > 0 ? "long" : "short"} ${m.name} on Perpl. Close it first so the ride starts flat.`);
+      exec = new PerplExecutor(apiAcct.key, m.name);
+      owner = apiAcct.owner;
+    } else {
+      if (!mera.wallet || !perpl.account) return setArmError("Not ready yet: passkey wallet and Perpl account are needed.");
+      const pos = await readPosition(publicClient, m, perpl.account.id).catch(() => null);
+      if (pos && pos.side !== 0) {
+        return setArmError(`You already hold a ${pos.side > 0 ? "long" : "short"} ${m.name} on Perpl. Close it first so the ride starts flat.`);
+      }
+      exec = new OnchainExecutor(publicClient, mera.wallet, m, perpl.account.id, LEVERAGE);
+      owner = mera.address;
     }
-    const e = new RideEngine(new OnchainExecutor(publicClient, mera.wallet, m, perpl.account.id, LEVERAGE), rails);
+    const e = new RideEngine(exec, rails);
     let seen = 0;
     const autopilot = modeRef.current === "passenger";
     e.subscribe((s) => {
       setState(s);
       if (s.status === "ended" && engine.current === e) {
-        setReceipt(saveReceipt(s, { asset: m.name, mode: "live", autopilot, rails: e.rails, owner: mera.address, lastMid: feedRef.current.mid }));
+        setReceipt(saveReceipt(s, { asset: m.name, mode: "live", autopilot, rails: e.rails, owner, lastMid: feedRef.current.mid }));
       }
       for (; seen < s.fills.length; seen++) pushRideTx(s.fills[seen].txid);
       const f = s.fills[s.fills.length - 1];
@@ -117,7 +150,7 @@ export function useLiveBridge(asset: string) {
     });
     takeRideTxids(); // a fresh trail for this ride
     setReceipt(null);
-    setRideAddress(mera.address);
+    setRideAddress(owner && /^0x[0-9a-fA-F]{40}$/.test(owner) ? owner : null);
     passenger.current = new Passenger();
     e.start();
     engine.current = e;
@@ -129,7 +162,7 @@ export function useLiveBridge(asset: string) {
       void e.end(feedRef.current.mid, "rider");
     };
     setArmed(true);
-  }, [mera.wallet, mera.address, perpl.account, rails]);
+  }, [mera.wallet, mera.address, perpl.account, rails, route, apiAcct.key, apiAcct.status, apiAcct.owner]);
 
   const disarm = useCallback(async () => {
     const e = engine.current;
@@ -175,6 +208,9 @@ export function useLiveBridge(asset: string) {
     feed,
     mera,
     perpl,
+    apiAcct,
+    route,
+    setRoute,
     receipt,
     dismissReceipt: () => setReceipt(null),
     armed,

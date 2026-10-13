@@ -50,12 +50,20 @@ export function TradeCockpit({
   const s = b.state;
   const net = s ? netPnl(s, b.feed.mid) : 0;
   const lastTx = s?.fills.filter((f) => f.txid).at(-1)?.txid;
-  const lights = [
-    { ok: b.ready.wallet, t: "passkey wallet", fix: "log in" },
-    { ok: b.ready.gas, t: "MON for gas", fix: "add MON" },
-    { ok: b.ready.account, t: "Perpl account", fix: "deposit AUSD" },
-    { ok: b.ready.margin, t: `margin ≥ ${usd((r.clipUsd / 3) * 1.2)}`, fix: "top up" },
-  ];
+  const viaKey = b.route === "perpl";
+  const lights = viaKey
+    ? [
+        { ok: b.ready.wallet, t: "Perpl key connected", fix: "connect below" },
+        { ok: b.ready.gas, t: "one-click trading", fix: "turn on at perpl.xyz" },
+        { ok: b.ready.account, t: "Perpl account", fix: "deposit on perpl.xyz" },
+        { ok: b.ready.margin, t: `margin ≥ ${usd((r.clipUsd / 3) * 1.2)}`, fix: "top up on perpl.xyz" },
+      ]
+    : [
+        { ok: b.ready.wallet, t: "passkey wallet", fix: "log in" },
+        { ok: b.ready.gas, t: "MON for gas", fix: "add MON" },
+        { ok: b.ready.account, t: "Perpl account", fix: "deposit AUSD" },
+        { ok: b.ready.margin, t: `margin ≥ ${usd((r.clipUsd / 3) * 1.2)}`, fix: "top up" },
+      ];
 
   async function goLive() {
     await b.arm();
@@ -90,6 +98,9 @@ export function TradeCockpit({
             </button>
           ))}
         </div>
+
+        {/* where the orders come from */}
+        <TradeFrom bridge={b} />
 
         {/* who drives */}
         <div className="grid grid-cols-2 border-2 border-steel">
@@ -133,7 +144,7 @@ export function TradeCockpit({
           <div className="border-2 border-steel bg-ink-soft p-4">
             <div className="grid grid-cols-2 gap-2 min-[640px]:grid-cols-4">
               {lights.map((l) => (
-                <button key={l.t} onClick={l.ok ? undefined : onMoney} className={`border-2 px-3 py-2 text-left ${l.ok ? "border-chart/50" : "border-steel hover:border-papaya"}`}>
+                <button key={l.t} onClick={l.ok || viaKey ? undefined : onMoney} className={`border-2 px-3 py-2 text-left ${l.ok ? "border-chart/50" : "border-steel hover:border-papaya"}`}>
                   <div className="flex items-center gap-2">
                     <span className={`h-2.5 w-2.5 rounded-full ${l.ok ? "bg-chart" : "bg-steel"}`} />
                     <span className="text-[12px] font-bold text-bone">{l.t}</span>
@@ -231,5 +242,93 @@ function Slider({ label, v, min, max, step, fmt, on, off }: { label: string; v: 
       </div>
       <input type="range" disabled={off} min={min} max={max} step={step} value={v} onChange={(e) => on(Number(e.target.value))} className="mt-1.5 w-full accent-[var(--papaya)]" />
     </label>
+  );
+}
+
+function TradeFrom({ bridge: b }: { bridge: LiveBridge }) {
+  const k = b.apiAcct;
+  const [apiKey, setApiKey] = useState("");
+  const [secret, setSecret] = useState("");
+  const [busy, setBusy] = useState(false);
+  return (
+    <div className="border-2 border-steel bg-ink-soft">
+      <div className="grid grid-cols-2">
+        {(
+          [
+            ["perpl", "My Perpl account", "your existing account and funds · trade-only API key · Perpl pays gas"],
+            ["passkey", "Passkey wallet", "Mera passkey · AUSD in a new wallet · every order sent from it onchain"],
+          ] as const
+        ).map(([id, t, d], i) => (
+          <button
+            key={id}
+            disabled={b.armed}
+            onClick={() => b.setRoute(id)}
+            className={`px-4 py-3 text-left ${i === 0 ? "border-r-2 border-steel" : ""} ${b.route === id ? "bg-papaya/15" : "hover:bg-ink"} disabled:opacity-60`}
+          >
+            <div className={`display text-[13px] font-black uppercase ${b.route === id ? "text-papaya" : "text-bone"}`}>{t}</div>
+            <div className="text-[11.5px] leading-snug text-flat">{d}</div>
+          </button>
+        ))}
+      </div>
+      {b.route === "perpl" && (
+        <div className="border-t-2 border-steel px-4 py-3">
+          {k.status === "ready" ? (
+            <div className="flex flex-wrap items-center justify-between gap-2 text-[12.5px]">
+              <span className="text-bone">
+                <span className="mr-2 inline-block h-2 w-2 rounded-full bg-chart" />
+                Perpl account #{k.accountId}
+                {k.owner && /^0x/.test(k.owner) ? ` · ${k.owner.slice(0, 6)}…${k.owner.slice(-4)}` : ""} · free{" "}
+                <b className="font-telemetry">{usd(k.free)}</b> AUSD
+                {k.forwarding === false && <span className="ml-2 text-blood">one-click trading is off</span>}
+              </span>
+              <button disabled={b.armed} onClick={k.disconnect} className="display border-2 border-steel px-3 py-1.5 text-[11px] font-bold uppercase text-flat hover:text-bone disabled:opacity-40">
+                disconnect
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-[12px] leading-snug text-flat">
+                On{" "}
+                <a href="https://app.perpl.xyz/apikeys" target="_blank" rel="noreferrer" className="text-sky underline">
+                  app.perpl.xyz/apikeys
+                </a>{" "}
+                create a key with the <b className="text-bone">trade</b> scope and paste the key and its secret here. The secret stays in this
+                browser. A Perpl API key can never withdraw or move your funds.
+              </p>
+              <input
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="API key"
+                autoComplete="off"
+                spellCheck={false}
+                className="w-full border-2 border-steel bg-ink px-3 py-2.5 text-[14px] text-bone outline-none focus:border-papaya"
+              />
+              <input
+                value={secret}
+                onChange={(e) => setSecret(e.target.value)}
+                placeholder="API secret (private key)"
+                type="password"
+                autoComplete="off"
+                spellCheck={false}
+                className="w-full border-2 border-steel bg-ink px-3 py-2.5 text-[14px] text-bone outline-none focus:border-papaya"
+              />
+              {k.error && <p className="text-[12px] text-blood">{k.error}</p>}
+              <button
+                disabled={busy || !apiKey || !secret}
+                onClick={async () => {
+                  setBusy(true);
+                  await k.connect(apiKey, secret);
+                  setBusy(false);
+                  setSecret("");
+                }}
+                className="gp-btn gp-btn-primary display w-full border-2 border-papaya bg-papaya px-4 py-2.5 text-[12px] font-black uppercase text-ink disabled:opacity-40"
+              >
+                {busy || k.status === "connecting" ? "connecting to Perpl…" : "connect my Perpl account"}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

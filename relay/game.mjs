@@ -57,17 +57,40 @@ async function rpc(method, params) {
 
 const seenTx = new Set(rides.flatMap((r) => r.txids ?? []));
 
-/** Count the txs that really are this rider's Perpl orders (each tx counts once, ever). */
+/** The rider's Perpl account id, read from the Exchange (0 = none). */
+async function accountIdOf(address) {
+  try {
+    const data = "0x12e8eb2c" + address.toLowerCase().replace(/^0x/, "").padStart(64, "0"); // getAccountByAddr(address)
+    const r = await rpc("eth_call", [{ to: EXCHANGE, data }, "latest"]);
+    return r && r.length >= 66 ? BigInt(r.slice(0, 66)) : 0n;
+  } catch {
+    return 0n;
+  }
+}
+
+/** Count the txs that really are this rider's Perpl orders (each tx counts once, ever).
+ *  Two shapes are accepted: an order the rider's own wallet sent to the Exchange
+ *  (passkey route), or an order Perpl forwarded for them (API-key route), where
+ *  the Exchange's logs in that tx must name the rider's Perpl account. */
 async function verifyTxs(address, txids) {
   if (!address || !Array.isArray(txids) || !txids.length) return [];
   const ok = [];
+  let acctWord = null;
   for (const raw of txids.slice(0, 60)) {
     const h = String(raw).startsWith("0x") ? String(raw) : `0x${raw}`;
     if (!/^0x[0-9a-fA-F]{64}$/.test(h) || seenTx.has(h.toLowerCase())) continue;
     try {
       const [tx, rc] = await Promise.all([rpc("eth_getTransactionByHash", [h]), rpc("eth_getTransactionReceipt", [h])]);
       if (!tx || !rc || rc.status !== "0x1") continue;
-      if (tx.to?.toLowerCase() !== EXCHANGE || tx.from?.toLowerCase() !== address.toLowerCase()) continue;
+      if (tx.to?.toLowerCase() !== EXCHANGE) continue;
+      if (tx.from?.toLowerCase() !== address.toLowerCase()) {
+        if (acctWord === null) {
+          const id = await accountIdOf(address);
+          acctWord = id > 0n ? id.toString(16).padStart(64, "0") : "";
+        }
+        const named = acctWord && (rc.logs ?? []).some((l) => l.address?.toLowerCase() === EXCHANGE && (l.data ?? "").toLowerCase().slice(2).match(/.{64}/g)?.includes(acctWord));
+        if (!named) continue;
+      }
       ok.push(h.toLowerCase());
     } catch {}
   }
