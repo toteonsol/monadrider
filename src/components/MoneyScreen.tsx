@@ -20,7 +20,7 @@ import { LoginCard } from "./LoginCard";
 import { History } from "./History";
 import { SendFunds } from "./SendFunds";
 
-const MIN_OPEN = 10; // Perpl's minimum to open an account (AUSD)
+const MIN_OPEN = 10; // Perpl's minimum to open an account, and for every deposit (AUSD)
 
 export function MoneyScreen({ goSpot }: { goSpot: () => void }) {
   const mera = useMera();
@@ -143,7 +143,8 @@ function PerplMargin({
     setBusy(dir);
     try {
       if (dir === "in") {
-        if (needOpen && n < MIN_OPEN) throw new Error(`Perpl needs at least ${MIN_OPEN} AUSD to open an account.`);
+        if (n < MIN_OPEN)
+          throw new Error(needOpen ? `Perpl needs at least ${MIN_OPEN} AUSD to open an account.` : `Perpl's smallest deposit is ${MIN_OPEN} AUSD.`);
         if (n > walletAusd + 1e-9) throw new Error("More than the AUSD in your wallet.");
         const r = await depositAusd(publicClient, mera.wallet, n);
         setTxs((t) => [
@@ -152,7 +153,8 @@ function PerplMargin({
           ...t,
         ]);
       } else {
-        if (n > (account?.free ?? 0) + 1e-9) throw new Error("More than your free margin.");
+        if (n < 0.01) throw new Error("Perpl's smallest withdrawal is 0.01 AUSD.");
+        if (n > (account?.free ?? 0) + 1e-9) throw new Error("More than your free margin (margin in an open position unlocks when it closes).");
         const r = await withdrawAusd(publicClient, mera.wallet, n);
         setTxs((t) => [{ label: "Withdraw", hash: r.hash }, ...t]);
       }
@@ -195,7 +197,7 @@ function PerplMargin({
         <div className="relative flex-1">
           <input
             inputMode="decimal"
-            placeholder={needOpen ? `${MIN_OPEN}+` : "0.00"}
+            placeholder={`${MIN_OPEN}+ to deposit · any to withdraw`}
             value={amt}
             onChange={(e) => setAmt(e.target.value.replace(/[^0-9.]/g, ""))}
             className="num w-full rounded-xl border border-line bg-ink-3 px-3 py-3 text-lg outline-none focus:border-monad"
