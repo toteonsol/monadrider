@@ -3,9 +3,21 @@
  * contracts it talks to. Addresses come from Perpl's public context (AUSD is
  * Perpl's collateral token) and are re-checked live at runtime.
  */
-import { defineChain } from "viem";
+import { defineChain, fallback, http } from "viem";
 
 const testnet = process.env.NEXT_PUBLIC_PERPL_TESTNET === "true";
+
+/** Every public RPC we spread load across; viem falls back in order on errors. */
+export const RPCS = testnet
+  ? ["https://testnet-rpc.monad.xyz"]
+  : [
+      ...(process.env.NEXT_PUBLIC_MONAD_RPC ? [process.env.NEXT_PUBLIC_MONAD_RPC] : []),
+      "https://rpc.monad.xyz",
+      "https://rpc1.monad.xyz",
+      "https://rpc2.monad.xyz",
+      "https://rpc3.monad.xyz",
+      "https://rpc-mainnet.monadinfra.com",
+    ].filter((u, i, a) => a.indexOf(u) === i);
 
 export const monad = defineChain({
   id: testnet ? 10143 : 143,
@@ -45,3 +57,6 @@ export const shortHash = (h: string) => {
   const x = hex(h);
   return `${x.slice(0, 6)}…${x.slice(-4)}`;
 };
+
+/** Resilient transport: retries, then the next RPC. */
+export const monadTransport = () => fallback(RPCS.map((u) => http(u, { retryCount: 2, retryDelay: 300, timeout: 12_000 })), { rank: false });

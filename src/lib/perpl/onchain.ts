@@ -173,7 +173,17 @@ export async function readPosition(pc: PublicClient, m: PerplMarket, accountId: 
 async function send(pc: PublicClient, w: W, req: Parameters<W["writeContract"]>[0]) {
   const gas = await pc.estimateContractGas({ ...(req as object), account: w.account } as Parameters<PublicClient["estimateContractGas"]>[0]);
   const hash = await w.writeContract({ ...(req as object), gas: (gas * 15n) / 10n } as Parameters<W["writeContract"]>[0]);
-  const receipt = await pc.waitForTransactionReceipt({ hash, timeout: 30_000 });
+  // once the tx is sent, a failing RPC read must not hide it: carry the hash on any error
+  let receipt;
+  for (let i = 0; ; i++) {
+    try {
+      receipt = await pc.waitForTransactionReceipt({ hash, timeout: 30_000 });
+      break;
+    } catch (e) {
+      if (i >= 2) throw Object.assign(e instanceof Error ? e : new Error(String(e)), { hash });
+      await new Promise((r) => setTimeout(r, 1200));
+    }
+  }
   if (receipt.status !== "success") throw Object.assign(new Error("transaction reverted"), { hash });
   return { hash, block: Number(receipt.blockNumber) };
 }

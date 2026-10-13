@@ -9,6 +9,8 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { useMera, publicClient } from "@/lib/wallet/mera";
+import { erc20Abi } from "viem";
+import { AUSD } from "@/lib/monad";
 import { quote, swap, type KuruQuote, type SpotToken } from "@/lib/kuru";
 import { qty, usd } from "@/lib/fmt";
 import { TxLink } from "./TxLink";
@@ -77,9 +79,27 @@ export function SpotScreen() {
       logActivity({ owner: mera.address, kind: "swap", route: "passkey", title, side, amountIn: n, out: q.out, txs: [...(r.approveHash ? [{ label: "Approve AUSD", hash: r.approveHash }] : []), { label: "Swap", hash: r.hash }] });
       setAmt("");
     } catch (e) {
+      // ask the chain before calling it a failure
+      setSt({ phase: "busy", step: "Checking onchain whether the swap went through…" });
+      await new Promise((r) => setTimeout(r, 2500));
+      const addr = mera.wallet.account.address;
+      const [monNow, ausdNow] = await Promise.all([
+        publicClient.getBalance({ address: addr }).then((x) => Number(x) / 1e18).catch(() => before.mon),
+        publicClient.readContract({ address: AUSD.address, abi: erc20Abi, functionName: "balanceOf", args: [addr] }).then((x) => Number(x) / 1e6).catch(() => before.ausd),
+      ]);
+      const moved = side === "buy" ? ausdNow <= before.ausd - n * 0.98 : monNow <= before.mon - n * 0.98;
+      const hash = (e as { hash?: string }).hash;
+      if (moved) {
+        const title = side === "buy" ? `Bought ~${qty(q.out, 2)} MON for ${usd(n)}` : `Sold ${qty(n, 2)} MON for ~${usd(q.out)}`;
+        setSt({ phase: "done", title, lines: ["Confirmed onchain (the RPC stumbled on the way back, but the swap landed)."], txs: hash ? [{ label: "Swap", hash }] : [] });
+        radio({ kind: "wallet", tone: "good", title, body: "Confirmed onchain.", tx: hash });
+        await mera.refresh();
+        setAmt("");
+        return;
+      }
       const x = explainError(e);
-      setSt({ phase: "error", ...x });
-      radio({ kind: "wallet", tone: "warn", title: "Swap didn't go through", body: x.hint ? `${x.message} ${x.hint}` : x.message });
+      setSt({ phase: "error", message: x.message, hint: `${x.hint ?? ""} Checked onchain: nothing moved.`.trim() });
+      radio({ kind: "wallet", tone: "warn", title: "Swap didn't go through", body: `${x.message} Nothing moved onchain.` });
     }
   }
 

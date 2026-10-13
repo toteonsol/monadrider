@@ -121,7 +121,17 @@ export async function swap(pc: PublicClient, w: W, q: KuruQuote, onStep?: (s: st
   onStep?.(approveHash ? "Step 2 of 2 · swapping on Kuru's order book…" : "Swapping on Kuru's order book…");
   const gas = await pc.estimateGas({ account: w.account, to: q.to, data: q.data, value: q.value });
   const hash = await w.sendTransaction({ to: q.to, data: q.data, value: q.value, gas: (gas * 13n) / 10n });
-  const receipt = await pc.waitForTransactionReceipt({ hash, timeout: 30_000 });
+  let receipt;
+  for (let i = 0; ; i++) {
+    try {
+      receipt = await pc.waitForTransactionReceipt({ hash, timeout: 30_000 });
+      break;
+    } catch (e) {
+      // the swap is sent: never lose its hash to a flaky RPC read
+      if (i >= 2) throw Object.assign(e instanceof Error ? e : new Error(String(e)), { hash });
+      await new Promise((r) => setTimeout(r, 1200));
+    }
+  }
   if (receipt.status !== "success") throw Object.assign(new Error("swap reverted"), { hash });
   return { hash, approveHash, block: Number(receipt.blockNumber) };
 }

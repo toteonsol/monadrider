@@ -12,7 +12,7 @@
 import { useState } from "react";
 import { useMera, publicClient } from "@/lib/wallet/mera";
 import { usePerplAccount } from "@/lib/perpl/usePerplAccount";
-import { depositAusd, withdrawAusd } from "@/lib/perpl/onchain";
+import { depositAusd, withdrawAusd, readAccount } from "@/lib/perpl/onchain";
 import { addressUrl, AUSD } from "@/lib/monad";
 import { usd, qty, short } from "@/lib/fmt";
 import { TxLink } from "./TxLink";
@@ -153,6 +153,7 @@ function PerplMargin({
       if (n > account.free + 1e-9) return setSt({ phase: "error", message: "More than your free margin.", hint: "Margin inside an open position unlocks when the position closes." });
     }
     const step = (t: string) => setSt({ phase: "busy", step: t });
+    const freeBefore = account?.free ?? 0;
     try {
       if (dir === "in") {
         const r = await depositAusd(publicClient, mera.wallet, n, step);
@@ -175,9 +176,24 @@ function PerplMargin({
       setAmt("");
       await onDone();
     } catch (e) {
+      // before calling it a failure, ask the chain: did the money actually move?
+      const hash = (e as { hash?: string }).hash;
+      setSt({ phase: "busy", step: "Checking onchain whether it went through…" });
+      await new Promise((r) => setTimeout(r, 2500));
+      const after = await readAccount(publicClient, mera.wallet.account.address).catch(() => null);
+      const moved = dir === "in" ? (after?.free ?? 0) >= freeBefore + n * 0.98 : (after?.free ?? 0) <= freeBefore - n * 0.98;
+      if (moved) {
+        const title = dir === "in" ? `Deposited ${usd(n)} AUSD into Perpl` : `Withdrew ${usd(n)} AUSD to your wallet`;
+        setSt({ phase: "done", title, lines: ["Confirmed onchain (the RPC stumbled on the way back, but the transaction landed)."], txs: hash ? [{ label: dir === "in" ? "Deposit" : "Withdraw", hash }] : [] });
+        radio({ kind: "wallet", tone: "good", title, body: "Confirmed onchain.", tx: hash });
+        if (hash) logActivity({ owner: mera.address, kind: dir === "in" ? "deposit" : "withdraw", route: "passkey", amount: n, txs: [{ label: dir === "in" ? "Deposit" : "Withdraw", hash }] });
+        setAmt("");
+        await onDone();
+        return;
+      }
       const x = explainError(e);
-      setSt({ phase: "error", ...x });
-      radio({ kind: "wallet", tone: "warn", title: `${dir === "in" ? "Deposit" : "Withdrawal"} didn't go through`, body: x.hint ? `${x.message} ${x.hint}` : x.message });
+      setSt({ phase: "error", message: x.message, hint: `${x.hint ?? ""} Checked onchain: nothing moved.`.trim() });
+      radio({ kind: "wallet", tone: "warn", title: `${dir === "in" ? "Deposit" : "Withdrawal"} didn't go through`, body: `${x.message} Nothing moved onchain.` });
     }
   }
 

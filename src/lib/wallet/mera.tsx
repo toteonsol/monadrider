@@ -30,7 +30,7 @@ import {
   type Chain,
   type Account,
 } from "viem";
-import { monad, AUSD } from "@/lib/monad";
+import { monad, AUSD, monadTransport } from "@/lib/monad";
 
 const CRED_KEY = "rtn-monad-mera-credential"; // the one used last (kept for older installs)
 const WALLETS_KEY = "rtn-monad-mera-wallets";
@@ -64,7 +64,7 @@ function writeWallets(list: SavedWallet[]) {
   } catch {}
 }
 
-export const publicClient = createPublicClient({ chain: monad, transport: http() }) as PublicClient;
+export const publicClient = createPublicClient({ chain: monad, transport: monadTransport() }) as PublicClient;
 
 function deriveEvmKey(prf: Uint8Array, index = 0): Uint8Array {
   const seed = mnemonicToSeedSync(entropyToMnemonic(prf, wordlist));
@@ -233,7 +233,7 @@ export function MeraProvider({ children }: { children: React.ReactNode }) {
   const forget = useCallback((credentialId: string) => save(readWallets().filter((w) => w.credentialId !== credentialId)), [save]);
 
   const wallet = useMemo(
-    () => (account ? createWalletClient({ account, chain: monad, transport: http() }) : null),
+    () => (account ? createWalletClient({ account, chain: monad, transport: monadTransport() }) : null),
     [account],
   );
 

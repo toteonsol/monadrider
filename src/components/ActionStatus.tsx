@@ -66,6 +66,8 @@ export function ActionStatus({ s, onClear }: { s: ActionState; onClear?: () => v
 export function explainError(e: unknown): { message: string; hint?: string } {
   const raw = e instanceof Error ? (e as { shortMessage?: string }).shortMessage || e.message : String(e);
   const m = raw.split("\n")[0];
+  if (/missing or invalid parameters|-32602|rate limit|429|fetch failed|failed to fetch|network|HTTP request failed/i.test(m))
+    return { message: "Monad's RPC didn't answer cleanly.", hint: "That's a network hiccup, not your wallet. Check the balance above (it refreshes), then tap again if nothing moved." };
   if (/insufficient funds|gas/i.test(m)) return { message: "Not enough MON to pay gas.", hint: "Send a little MON to this wallet (0.1 is plenty), then try again." };
   if (/exceeds balance|transfer amount/i.test(m)) return { message: "Not enough of that token in the wallet.", hint: "Lower the amount, or tap Max." };
   if (/SESSION_ENDED|session/i.test(m)) return { message: "The wallet is locked.", hint: "Log in with your passkey again in Money." };
