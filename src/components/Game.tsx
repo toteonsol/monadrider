@@ -388,7 +388,7 @@ export function Game() {
           onClose={bridge.dismissReceipt}
           onSpot={() => go("spot")}
           onSweep={
-            mera.wallet
+            mera.wallet && bridge.route === "passkey"
               ? async (amount) => {
                   const r = await withdrawAusd(publicClient, mera.wallet!, amount);
                   void mera.refresh();

@@ -9,7 +9,7 @@
  */
 import type { RideRecord } from "./rideLog";
 import { myCode, riderIdFor } from "./referral";
-import { takeRideTxids, getRideAddress } from "@/lib/ride/session";
+import { getRideAddress } from "@/lib/ride/session";
 import { getRideAsset } from "./liveFeed";
 
 const base = (process.env.NEXT_PUBLIC_GAME_API || "http://localhost:8787").replace(/\/$/, "");
@@ -26,7 +26,10 @@ async function get<T>(path: string, fallback: T): Promise<T> {
 }
 
 export function submitRide(rec: RideRecord) {
-  const txids = rec.live ? takeRideTxids() : [];
+  // live rides are submitted by the live engine itself (submitLiveRide), with
+  // their Monad txs, whichever way the ride ended; the worlds send practice
+  if (rec.live) return;
+  const txids: string[] = [];
   const address = rec.address ?? (rec.live ? getRideAddress() : null);
   void fetch(`${base}/api/rides`, {
     method: "POST",
@@ -92,3 +95,36 @@ export const fetchStreak = (): Promise<number> => get(`/api/streak?rider=${encod
 
 /** claimed rider names · this edition has no name claims yet, so every rider shows their generated alias */
 export const fetchClaimedNames = async (_codes: string[]): Promise<{ code: string; name: string }[]> => [];
+
+/** A live ride, straight from the engine when it ends: the server verifies
+ *  every tx before it counts. Points: 1 per $1 of real volume. */
+export function submitLiveRide(r: {
+  owner: string | null;
+  mode: string;
+  asset: string;
+  volume: number;
+  fees: number;
+  pnl: number;
+  fills: number;
+  txids: string[];
+}) {
+  const address = r.owner && /^0x[0-9a-fA-F]{40}$/.test(r.owner) ? r.owner : null;
+  void fetch(`${base}/api/rides`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      rider: riderIdFor(address),
+      address,
+      mode: r.mode,
+      asset: r.asset,
+      live: true,
+      points: Math.round(r.volume),
+      realVolume: r.volume,
+      realFees: r.fees,
+      realPnl: r.pnl,
+      fills: r.fills,
+      crashes: 0,
+      txids: r.txids,
+    }),
+  }).catch(() => {});
+}

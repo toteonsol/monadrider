@@ -31,6 +31,7 @@ import { usePerplAccount } from "@/lib/perpl/usePerplAccount";
 import { setRideAsset } from "@/lib/game/liveFeed";
 import { setRideAddress } from "./session";
 import { saveReceipt, type Receipt } from "./receipts";
+import { submitLiveRide } from "@/lib/game/backend";
 
 export type DriveMode = "turbo" | "passenger";
 /** where live orders come from: the passkey wallet (orders sent onchain from
@@ -134,10 +135,24 @@ export function useLiveBridge(asset: string) {
     const autopilot = modeRef.current === "passenger";
     e.subscribe((s) => {
       setState(s);
-      if (s.status === "ended" && engine.current === e) {
-        setReceipt(saveReceipt(s, { asset: m.name, mode: "live", autopilot, rails: e.rails, owner, lastMid: feedRef.current.mid }));
-      }
+      // collect every fill's tx before a final submit can take the trail
       for (; seen < s.fills.length; seen++) pushRideTx(s.fills[seen].txid);
+      if (s.status === "ended" && engine.current === e) {
+        const rec = saveReceipt(s, { asset: m.name, mode: "live", autopilot, rails: e.rails, owner, lastMid: feedRef.current.mid });
+        setReceipt(rec);
+        if (s.fills.length) {
+          submitLiveRide({
+            owner,
+            mode: autopilot ? "passenger" : "drive",
+            asset: m.name,
+            volume: s.volume,
+            fees: s.fees,
+            pnl: rec.net,
+            fills: s.fills.length,
+            txids: takeRideTxids(),
+          });
+        }
+      }
       const f = s.fills[s.fills.length - 1];
       realRef.current = {
         volume: s.volume,
