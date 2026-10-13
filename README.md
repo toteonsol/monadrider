@@ -31,6 +31,23 @@ Around them sits the Paddock: a next-move ladder for newcomers (free lap → pas
 | **Money** | passkey wallet, AUSD and MON, receive address, AUSD in and out of Perpl margin, ride history | `createAccount` / `depositCollateral` / `withdrawCollateral` |
 | **You** | standings, points, your rides | — |
 
+### Two ways to trade live
+
+| Route | Who it's for | How orders reach Perpl |
+|---|---|---|
+| **Passkey wallet (Mera)** | anyone, from zero: Face ID makes the wallet, AUSD funds it | each lane change is an `Exchange.execOrder` tx signed in-tab by the passkey wallet |
+| **My Perpl account** | people who already trade on Perpl | a trade-only API key (pasted once, kept in the browser; it can never withdraw); Perpl forwards each order onchain and pays gas |
+
+A step-by-step guide with drawings lives at [`/guide`](https://ride-the-now-monad.vercel.app/guide).
+
+### Not a passive game: the smart layer
+
+- **Pit wall** (cockpit, and collapsible inside every world): live spread, round-trip cost (spread + two taker fees), 30-second swing and funding for the road you're on, judged **CALM / CHOPPY / STORM** against your stop. Plain advice, a one-tap **sit out** (close and hold flat while the world keeps playing) and **back in**, and **better roads** on Perpl with the numbers ("BTC spread 1.0 bps vs 7.4 on MON").
+- **Pit radio**: opportunity cards from Perpl's live market state (biggest mover, funding that pays one side, busiest book) with "ride this"; every fill with its Monad tx; stops, take-profits and ride summaries; tips drawn from what your ride did.
+- **Live controls**: take-profit rail, stop and take-profit tunable mid-ride, close now, flip, and an "on Perpl right now" card read from the venue itself.
+- **Logbook**: every live ride (route-badged), practice run, Kuru swap, Perpl deposit/withdrawal and send, with totals (live volume, net, cost per $1M, win rate, onchain txs) and each ride's fills and Monad txs, marked when the Paddock verified them.
+- **Region rules**: live trading honours Perpl's own geo-block list (the relay only opens Perpl's trading socket with a short-lived pass issued outside it). Practice is open to everyone.
+
 Every live ride ends with a **P&L and risk receipt**: net, volume, fees, max drawdown, stops hit, and every fill with its Monad transaction. A winning ride can send its winnings back to the wallet as AUSD in one tap.
 
 **Receipts, not claims.** The Paddock's own server counts a ride as live only after checking its Monad transactions: each must be a successful call from the rider's wallet to Perpl's Exchange. Anything else scores as practice (capped at 150 points).
