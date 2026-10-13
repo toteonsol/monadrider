@@ -19,6 +19,7 @@ import { TxLink } from "./TxLink";
 import { LoginCard } from "./LoginCard";
 import { Logbook } from "./Logbook";
 import { SendFunds } from "./SendFunds";
+import { WalletSwitcher } from "./WalletSwitcher";
 import { ActionStatus, explainError, type ActionState } from "./ActionStatus";
 import { radio } from "@/lib/radio";
 import { logActivity } from "@/lib/activity";
@@ -102,6 +103,7 @@ export function MoneyScreen({ goSpot }: { goSpot: () => void }) {
           }}
         />
         <SendFunds />
+        <WalletSwitcher />
       </div>
 
       <div className="space-y-4">
@@ -162,13 +164,13 @@ function PerplMargin({
           txs: [...(r.approve ? [{ label: "Approve AUSD", hash: r.approve.hash }] : []), { label: r.created ? "Open account + deposit" : "Deposit", hash: r.tx.hash }],
         });
         radio({ kind: "wallet", tone: "good", title, body: "Margin is ready on Perpl. Open Trade and go live.", tx: r.tx.hash });
-        logActivity({ kind: "deposit", route: "passkey", amount: n, created: r.created, txs: [...(r.approve ? [{ label: "Approve AUSD", hash: r.approve.hash }] : []), { label: r.created ? "Open account + deposit" : "Deposit", hash: r.tx.hash }] });
+        logActivity({ owner: mera.address, kind: "deposit", route: "passkey", amount: n, created: r.created, txs: [...(r.approve ? [{ label: "Approve AUSD", hash: r.approve.hash }] : []), { label: r.created ? "Open account + deposit" : "Deposit", hash: r.tx.hash }] });
       } else {
         const r = await withdrawAusd(publicClient, mera.wallet, n, step);
         const title = `Withdrew ${usd(n)} AUSD to your wallet`;
         setSt({ phase: "done", title, lines: ["It's in this wallet now. Send it anywhere below."], txs: [{ label: "Withdraw", hash: r.hash }] });
         radio({ kind: "wallet", tone: "good", title, body: "Back in your passkey wallet.", tx: r.hash });
-        logActivity({ kind: "withdraw", route: "passkey", amount: n, txs: [{ label: "Withdraw", hash: r.hash }] });
+        logActivity({ owner: mera.address, kind: "withdraw", route: "passkey", amount: n, txs: [{ label: "Withdraw", hash: r.hash }] });
       }
       setAmt("");
       await onDone();

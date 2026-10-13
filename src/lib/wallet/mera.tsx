@@ -32,7 +32,37 @@ import {
 } from "viem";
 import { monad, AUSD } from "@/lib/monad";
 
-const CRED_KEY = "rtn-monad-mera-credential";
+const CRED_KEY = "rtn-monad-mera-credential"; // the one used last (kept for older installs)
+const WALLETS_KEY = "rtn-monad-mera-wallets";
+
+/** A passkey wallet this browser knows: its passkey's public credential id, a
+ *  label, and (once opened) its address. Nothing secret is stored. */
+export interface SavedWallet {
+  credentialId: string;
+  transports?: string[];
+  label: string;
+  address?: string;
+  addedAt: number;
+}
+
+function readWallets(): SavedWallet[] {
+  try {
+    const list = JSON.parse(localStorage.getItem(WALLETS_KEY) || "[]") as SavedWallet[];
+    if (list.length) return list;
+    // migrate the single credential older versions kept
+    const one = localStorage.getItem(CRED_KEY);
+    if (one) {
+      const c = JSON.parse(one) as { credentialId: string; transports?: string[] };
+      return [{ ...c, label: "Wallet 1", addedAt: Date.now() }];
+    }
+  } catch {}
+  return [];
+}
+function writeWallets(list: SavedWallet[]) {
+  try {
+    localStorage.setItem(WALLETS_KEY, JSON.stringify(list));
+  } catch {}
+}
 
 export const publicClient = createPublicClient({ chain: monad, transport: http() }) as PublicClient;
 
@@ -73,8 +103,16 @@ interface WalletCtx {
   busy: boolean;
   error: string;
   hasPasskey: boolean;
+  /** every passkey wallet this browser knows, and the one that's open */
+  wallets: SavedWallet[];
+  activeId: string | null;
   create: (name: string) => Promise<void>;
-  login: () => Promise<void>;
+  /** log in · with an id, to that saved wallet; without, the last one used */
+  login: (credentialId?: string) => Promise<void>;
+  /** lock the open wallet and log in to another */
+  switchTo: (credentialId: string) => Promise<void>;
+  rename: (credentialId: string, label: string) => void;
+  forget: (credentialId: string) => void;
   lock: () => void;
   refresh: () => Promise<void>;
 }
@@ -88,56 +126,80 @@ export function MeraProvider({ children }: { children: React.ReactNode }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [hasPasskey, setHasPasskey] = useState(false);
+  const [wallets, setWallets] = useState<SavedWallet[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
-      setHasPasskey(!!localStorage.getItem(CRED_KEY));
-    } catch {
-      /* storage blocked: the picker still works */
-    }
+    const list = readWallets();
+    setWallets(list);
+    setHasPasskey(list.length > 0);
   }, []);
 
-  const open = useCallback((prf: Uint8Array) => {
-    const s = createSecp256k1SigningSession({ privateKey: deriveEvmKey(prf) });
-    setSession(s);
-    setAccount(toViemAccount(s));
+  const save = useCallback((list: SavedWallet[]) => {
+    writeWallets(list);
+    setWallets(list);
+    setHasPasskey(list.length > 0);
   }, []);
+
+  const open = useCallback(
+    (prf: Uint8Array, credentialId: string) => {
+      const s = createSecp256k1SigningSession({ privateKey: deriveEvmKey(prf) });
+      const acct = toViemAccount(s);
+      setSession(s);
+      setAccount(acct);
+      setActiveId(credentialId);
+      // remember which address this passkey opens (public), and that it's the last used
+      const list = readWallets();
+      const i = list.findIndex((w) => w.credentialId === credentialId);
+      if (i >= 0) list[i] = { ...list[i], address: acct.address };
+      else list.push({ credentialId, label: `Wallet ${list.length + 1}`, address: acct.address, addedAt: Date.now() });
+      save(list);
+      try {
+        const w = list.find((x) => x.credentialId === credentialId);
+        localStorage.setItem(CRED_KEY, JSON.stringify({ credentialId, transports: w?.transports }));
+      } catch {}
+    },
+    [save],
+  );
 
   const create = useCallback(
     async (name: string) => {
       setBusy(true);
       setError("");
       try {
-        const label = name.trim() || "Rider";
+        const existing = readWallets();
+        const label = name.trim() || `Wallet ${existing.length + 1}`;
         const c = await createPasskeyWithPrfOutput({
-          rp: { id: location.hostname, name: "Ride the Now · Monad" },
+          rp: { id: location.hostname, name: "Monad Rider" },
           user: { name: label, displayName: label },
         });
-        try {
-          localStorage.setItem(CRED_KEY, JSON.stringify({ credentialId: c.credentialId, transports: c.transports }));
-        } catch {}
-        setHasPasskey(true);
-        open(c.prfOutput);
+        save([...existing, { credentialId: c.credentialId, transports: c.transports as string[] | undefined, label, addedAt: Date.now() }]);
+        open(c.prfOutput, c.credentialId);
       } catch (e) {
         setError(friendly(e));
       } finally {
         setBusy(false);
       }
     },
-    [open],
+    [open, save],
   );
 
-  const login = useCallback(async () => {
+  const login = useCallback(async (credentialId?: string) => {
     setBusy(true);
     setError("");
     try {
       let credential;
       try {
-        const raw = localStorage.getItem(CRED_KEY);
-        credential = raw ? JSON.parse(raw) : undefined;
+        if (credentialId) {
+          const w = readWallets().find((x) => x.credentialId === credentialId);
+          credential = w ? { credentialId: w.credentialId, transports: w.transports } : undefined;
+        } else {
+          const raw = localStorage.getItem(CRED_KEY);
+          credential = raw ? JSON.parse(raw) : undefined;
+        }
       } catch {}
       const r = await getPasskeyPrfOutput({ rpId: location.hostname, credential });
-      open(r.prfOutput);
+      open(r.prfOutput, r.credentialId);
     } catch (e) {
       setError(friendly(e));
     } finally {
@@ -150,7 +212,25 @@ export function MeraProvider({ children }: { children: React.ReactNode }) {
     setSession(null);
     setAccount(null);
     setBalances(null);
+    setActiveId(null);
   }, [session]);
+
+  const switchTo = useCallback(
+    async (credentialId: string) => {
+      session?.end();
+      setSession(null);
+      setAccount(null);
+      setBalances(null);
+      await login(credentialId);
+    },
+    [session, login],
+  );
+
+  const rename = useCallback(
+    (credentialId: string, label: string) => save(readWallets().map((w) => (w.credentialId === credentialId ? { ...w, label: label.slice(0, 24) || w.label } : w))),
+    [save],
+  );
+  const forget = useCallback((credentialId: string) => save(readWallets().filter((w) => w.credentialId !== credentialId)), [save]);
 
   const wallet = useMemo(
     () => (account ? createWalletClient({ account, chain: monad, transport: http() }) : null),
@@ -188,8 +268,13 @@ export function MeraProvider({ children }: { children: React.ReactNode }) {
     busy,
     error,
     hasPasskey,
+    wallets,
+    activeId,
     create,
     login,
+    switchTo,
+    rename,
+    forget,
     lock,
     refresh,
   };

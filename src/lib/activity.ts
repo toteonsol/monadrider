@@ -18,19 +18,22 @@ export type Activity =
 
 const KEY = "rtn-monad-activity";
 
-export function loadActivity(): Activity[] {
+export function loadActivity(): (Activity & WithOwner)[] {
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as Activity[]) : [];
+    return raw ? (JSON.parse(raw) as (Activity & WithOwner)[]) : [];
   } catch {
     return [];
   }
 }
 
+/** Every entry may carry the wallet it belongs to (passkey address or Perpl key owner). */
+type WithOwner = { owner?: string | null };
+
 /** Distributive omit, so each kind keeps its own fields. */
 type NewActivity = Activity extends infer A ? (A extends Activity ? Omit<A, "id" | "at"> : never) : never;
 
-export function logActivity(a: NewActivity) {
+export function logActivity(a: NewActivity & WithOwner) {
   const full = { ...a, id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, at: Date.now() } as Activity;
   try {
     localStorage.setItem(KEY, JSON.stringify([full, ...loadActivity()].slice(0, 200)));

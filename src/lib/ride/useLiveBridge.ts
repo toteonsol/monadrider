@@ -177,7 +177,7 @@ export function useLiveBridge(asset: string) {
       if (s.status === "ended" && engine.current === e) {
         const rec = saveReceipt(s, { asset: m.name, mode: "live", autopilot, rails: e.rails, owner, lastMid: feedRef.current.mid });
         setReceipt(rec);
-        logActivity({ kind: "ride", route: viaKeyAtArm ? "apikey" : "passkey", receipt: rec });
+        logActivity({ owner, kind: "ride", route: viaKeyAtArm ? "apikey" : "passkey", receipt: rec });
         radio({
           kind: "ride",
           tone: rec.net >= 0 ? "good" : "warn",

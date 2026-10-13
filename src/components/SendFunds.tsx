@@ -50,7 +50,7 @@ export function SendFunds() {
       const text = `Sent ${token === "AUSD" ? usd(n) + " AUSD" : qty(n, 4) + " MON"} to ${dest.slice(0, 6)}…${dest.slice(-4)}`;
       setSent((s) => [{ hash, text }, ...s]);
       radio({ kind: "wallet", tone: "good", title: `✓ ${text}`, body: "Settled on Monad.", tx: hash });
-      logActivity({ kind: "send", route: "passkey", token, amount: n, to: dest, txs: [{ label: "Send", hash }] });
+      logActivity({ owner: mera.address, kind: "send", route: "passkey", token, amount: n, to: dest, txs: [{ label: "Send", hash }] });
       setAmt("");
       await mera.refresh();
     } catch (e) {

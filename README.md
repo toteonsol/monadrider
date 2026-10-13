@@ -7,7 +7,7 @@ A racing, surfing and rhythm game where every lane you hold is a real, capped pe
 - **Track:** Onchain Finance & Trading
 - **Bounties:** Agora (best mobile trading app), Kuru (consumer trading app), Perpl (best use of Perpl's API / automation)
 - **Licence:** AGPL-3.0
-- **Live app:** https://ride-the-now-monad.vercel.app · **Repo:** https://github.com/toteonsol/monadrider · **Demo video:** _added at submission_
+- **Live app:** https://monadrider.ceoism.com (also https://ride-the-now-monad.vercel.app) · **Repo:** https://github.com/toteonsol/monadrider · **Demo video:** _added at submission_
 
 ---
 
@@ -39,6 +39,14 @@ Around them sits the Paddock: a next-move ladder for newcomers (free lap → pas
 | **My Perpl account** | people who already trade on Perpl | a trade-only API key (pasted once, kept in the browser; it can never withdraw); Perpl forwards each order onchain and pays gas |
 
 A step-by-step guide with drawings lives at [`/guide`](https://ride-the-now-monad.vercel.app/guide).
+
+### The desk (Kuru spot + Perpl short)
+
+Trade › Desk: hold MON on Kuru and short the same MON on Perpl at 2×. Price moves cancel; Perpl funding is the trade. The panel shows funding live (per interval, per day, per year, $ per day at your size), the real entry + exit cost from Kuru quotes and Perpl fees, and the days to break even. Opening runs both legs from the passkey wallet (Kuru swap, then `execOrder` short sized to the MON received); closing buys the short back first (never naked short), then sells the MON. Both legs are the rider's own Monad txs, in the Logbook.
+
+### Several passkey wallets
+
+Money › Your passkey wallets: make one per purpose (ride, save, desk), switch with a Face ID / fingerprint check, rename, and filter the Logbook to the open wallet or all of them. Only labels and public credential ids are stored.
 
 ### Not a passive game: the smart layer
 

@@ -29,6 +29,7 @@ import { publicClient } from "@/lib/wallet/mera";
 import { RadioBell, RadioToasts } from "./PitRadio";
 import { LiveChip } from "./LiveChip";
 import { PitWall } from "./PitWall";
+import { Roadmap } from "./Roadmap";
 import { useOpportunities } from "@/lib/useOpportunities";
 import { radio } from "@/lib/radio";
 import { useLiveBridge } from "@/lib/ride/useLiveBridge";
@@ -383,6 +384,7 @@ export function Game() {
                 bridge.setMode("passenger");
                 go("trade");
               }} onSpot={() => go("spot")} onYou={() => go("you")} />
+              <Roadmap />
             </div>
           </div>
         )}

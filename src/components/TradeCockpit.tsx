@@ -12,6 +12,7 @@ import { fetchPerplContext } from "@/lib/perpl/config";
 import { LiveTape } from "./LiveTape";
 import { PerplKeyGuide } from "./PerplKeyGuide";
 import { PitWall } from "./PitWall";
+import { DeskPanel } from "./DeskPanel";
 import { TxLink } from "./TxLink";
 import { price, signedUsd, usd } from "@/lib/fmt";
 
@@ -32,6 +33,7 @@ export function TradeCockpit({
   onMoney: () => void;
 }) {
   const b = bridge;
+  const [view, setView] = useState<"ride" | "desk">("ride");
   const [mids, setMids] = useState<Record<string, number>>({});
   useEffect(() => {
     let dead = false;
@@ -78,12 +80,29 @@ export function TradeCockpit({
         <div>
           <div className="display text-[11px] font-bold uppercase tracking-[0.16em] text-papaya">The cockpit · Perpl on Monad</div>
           <h1 className="display mt-1 text-[26px] font-black uppercase leading-none text-bone min-[900px]:text-[34px]">Pick a market. Go live.</h1>
+          <div className="mt-3 inline-grid grid-cols-2 border-2 border-steel">
+            {(
+              [
+                ["ride", "Ride", "steer a world"],
+                ["desk", "Desk", "Kuru spot + Perpl short"],
+              ] as const
+            ).map(([k, t, d]) => (
+              <button key={k} onClick={() => setView(k)} disabled={b.armed && k === "desk"} className={`px-4 py-2 text-left ${view === k ? "bg-papaya text-ink" : "text-flat hover:text-bone"} disabled:opacity-40`}>
+                <div className="display text-[12px] font-black uppercase">{t}</div>
+                <div className={`text-[10.5px] ${view === k ? "text-ink/80" : "text-flat-dim"}`}>{d}</div>
+              </button>
+            ))}
+          </div>
           <p className="mt-2 text-[13px] text-flat">
             Every lane you hold is one IOC order from your passkey wallet straight to Perpl&apos;s Exchange contract: one Monad
             transaction, settled in a block.
           </p>
         </div>
 
+        {view === "desk" ? (
+          <DeskPanel onMoney={onMoney} />
+        ) : (
+        <>
         {/* market board */}
         <div className="grid grid-cols-2 border-2 border-steel min-[560px]:grid-cols-5">
           {(MARKETS.includes(asset as (typeof MARKETS)[number]) ? [...MARKETS] : [...MARKETS.slice(0, 4), asset]).map((m, i) => (
@@ -242,6 +261,8 @@ export function TradeCockpit({
               </button>
             </div>
           </div>
+        )}
+        </>
         )}
       </div>
 

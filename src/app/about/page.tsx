@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AUSD, PERPL_EXCHANGE, addressUrl } from "@/lib/monad";
 import { KURU_MON_AUSD } from "@/lib/kuru";
+import { Roadmap } from "@/components/Roadmap";
 
 export const metadata: Metadata = {
   title: "How it works · Ride the Now on Monad",
@@ -91,6 +92,8 @@ export default function About() {
           <p className="mt-2">The code is open source under AGPL-3.0.</p>
         </div>
       </Section>
+
+      <Roadmap />
 
       <Section title="Contracts on Monad mainnet">
         <div className="card divide-y divide-line px-5 text-sm">

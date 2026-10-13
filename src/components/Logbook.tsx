@@ -47,10 +47,12 @@ export function Logbook({ owner }: { owner: string | null }) {
   const [filter, setFilter] = useState<Filter>("all");
   const [open, setOpen] = useState<string | null>(null);
   const [verifiedTx, setVerifiedTx] = useState<Set<string>>(new Set());
+  const [scope, setScope] = useState<"this" | "all">("this");
 
   useEffect(() => {
     const read = () => {
-      const acts = loadActivity();
+      const mine = (o?: string | null) => scope === "all" || !owner || !o || o.toLowerCase() === owner.toLowerCase();
+      const acts = loadActivity().filter((a) => mine(a.owner));
       const known = new Set(acts.filter((a) => a.kind === "ride").map((a) => (a as { receipt: Receipt }).receipt.id));
       // live receipts saved before the ledger existed
       // every receipt this browser holds, whichever wallet or key rode it
@@ -77,7 +79,7 @@ export function Logbook({ owner }: { owner: string | null }) {
       window.removeEventListener("rtn-activity", read);
       window.removeEventListener("focus", read);
     };
-  }, [owner]);
+  }, [owner, scope]);
 
   const shown = rows.filter((r) =>
     filter === "all"
@@ -141,6 +143,15 @@ export function Logbook({ owner }: { owner: string | null }) {
       </div>
 
       <div className="flex gap-1.5 overflow-x-auto px-4 py-3 [scrollbar-width:none]">
+        {owner && (
+          <button
+            onClick={() => setScope(scope === "this" ? "all" : "this")}
+            className="display shrink-0 border-2 border-sky px-2.5 py-1 text-[10.5px] font-black uppercase text-sky"
+            title="the open passkey wallet, or every wallet and key on this device"
+          >
+            {scope === "this" ? "this wallet ▾" : "all wallets ▾"}
+          </button>
+        )}
         {FILTERS.map(([f, label]) => (
           <button
             key={f}
