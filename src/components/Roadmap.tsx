@@ -5,6 +5,7 @@
 const ITEMS: { s: "live" | "next" | "soon" | "later"; t: string; d: string }[] = [
   { s: "live", t: "The desk, v1", d: "Kuru spot + Perpl short on MON: earn funding, not direction. Carry, costs and break-even shown live." },
   { s: "live", t: "Pit wall + pit radio", d: "market weather, sit-out, better roads with the numbers, opportunity cards, coaching from your own rides." },
+  { s: "next", t: "Live paper studies on Monad", d: "always-on paper studies on Perpl and Kuru books (funding extremes vs spot, the gap between two books, the unloved short) that publish findings while they run and seed the pit wall, so the app gets smarter every hour." },
   { s: "next", t: "Spot mode in SURFER", d: "ride MON spot on Kuru instead of a perp, for anyone who wants no leverage at all." },
   { s: "live", t: "Wallet switcher", d: "several passkey wallets (spend, save, desk), each with its own Logbook." },
   { s: "next", t: "Share cards + ride replays", d: "clip a drive with its real Monad txs on it, made for X, TikTok and streams." },
