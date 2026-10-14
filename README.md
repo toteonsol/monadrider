@@ -131,6 +131,7 @@ This project deploys no contracts of its own. It is a client of the contracts ab
 | Second Kuru swap MON → AUSD | [`0xc250cc02…9086`](https://monadscan.com/tx/0xc250cc020c7f8cabc6940b45fd4590affc9c80c111ecc541fe5cf61e1b219086) |
 | Deposit AUSD again (`depositCollateral`) | [`0x3805db80…7d4b`](https://monadscan.com/tx/0x3805db8062c5729d206a7c580ca3ad82cfff7c45568c24cb9209a24c19057d4b) |
 | Second live ride on MON (`execOrder`), first fill | [`0x3147bb2f…4d4e`](https://monadscan.com/tx/0x3147bb2ff3bf9378e54a1e33ad4101140af8e1c16d2a24a32f496ad683e74d4e) |
+| Passenger ride from the same wallet (`execOrder`), first fill | [`0x0c51b26d…fd94`](https://monadscan.com/tx/0x0c51b26d1154cfa07d61323628ea5f6e431e21d46f7d3250b8ffa15c2fa9fd94) |
 
 **Live rides verified onchain by the Paddock server** (10 rides on MON, 30 fills, about $340 of volume, 13 to 14 Oct 2026). The server counts a ride only after the tx's Exchange logs name the rider's Perpl account. First fill of each ride:
 
