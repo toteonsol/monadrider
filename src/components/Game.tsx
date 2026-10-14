@@ -385,6 +385,20 @@ export function Game() {
                 go("trade");
               }} onSpot={() => go("spot")} onYou={() => go("you")} />
               <Roadmap />
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-2 border-t border-hairline pt-5 text-[11px]">
+                {(
+                  [
+                    ["X · @web3wikis", "https://x.com/web3wikis"],
+                    ["Telegram · @surpassinggoogle", "https://t.me/surpassinggoogle"],
+                    ["GitHub · source", "https://github.com/toteonsol/monadrider"],
+                    ["How it works", "/about"],
+                  ] as const
+                ).map(([t, h]) => (
+                  <a key={h} href={h} target={h.startsWith("http") ? "_blank" : undefined} rel="noreferrer" className="display border border-steel px-3 py-1.5 font-bold uppercase tracking-wide text-flat hover:border-papaya hover:text-papaya">
+                    {t}
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
         )}

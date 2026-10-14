@@ -95,6 +95,20 @@ export default function About() {
 
       <Roadmap />
 
+      <Section title="Follow and contact">
+        <div className="card flex flex-wrap gap-2 px-5 py-4 text-sm">
+          <a href="https://x.com/web3wikis" target="_blank" rel="noreferrer" className="btn btn-ghost">
+            X · @web3wikis
+          </a>
+          <a href="https://t.me/surpassinggoogle" target="_blank" rel="noreferrer" className="btn btn-ghost">
+            Telegram · @surpassinggoogle
+          </a>
+          <a href="https://github.com/toteonsol/monadrider" target="_blank" rel="noreferrer" className="btn btn-ghost">
+            GitHub · source
+          </a>
+        </div>
+      </Section>
+
       <Section title="Contracts on Monad mainnet">
         <div className="card divide-y divide-line px-5 text-sm">
           <Row k="Perpl Exchange" a={PERPL_EXCHANGE} />

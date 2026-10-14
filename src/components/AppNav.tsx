@@ -212,6 +212,28 @@ export default function AppNav({
           </a>
         </div>
       )}
+      {showHelp && (
+        <div className="hidden lg:mt-1.5 lg:flex lg:gap-1.5 lg:px-1">
+          <a
+            href="https://x.com/web3wikis"
+            target="_blank"
+            rel="noreferrer"
+            className="display flex min-h-[32px] flex-1 items-center justify-center border border-steel text-[11px] font-bold uppercase tracking-wide text-flat transition hover:border-papaya hover:text-papaya"
+            title="follow on X · @web3wikis"
+          >
+            X
+          </a>
+          <a
+            href="https://t.me/surpassinggoogle"
+            target="_blank"
+            rel="noreferrer"
+            className="display flex min-h-[32px] flex-1 items-center justify-center border border-steel text-[11px] font-bold uppercase tracking-wide text-flat transition hover:border-papaya hover:text-papaya"
+            title="contact on Telegram · @surpassinggoogle"
+          >
+            Telegram
+          </a>
+        </div>
+      )}
       {/* the language, on its own line · "Поддержка" and "Гайд" leave no room beside them */}
       <div className="hidden lg:mt-1.5 lg:flex lg:px-1 [&>label]:w-full">
         <LanguagePicker />
