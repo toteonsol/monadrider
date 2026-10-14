@@ -64,7 +64,7 @@ export default function PointsBoard({
             The championship
           </h2>
           <p className="mt-1 max-w-[640px] text-[12.5px] leading-snug text-flat">
-            Every ride earns <b className="text-bone">Ride the Now points</b> on top of whatever the
+            Every ride earns <b className="text-bone">Monad Rider points</b> on top of whatever the
             venue&apos;s own airdrop pays you. One drive, two ledgers, and the points are the part
             that is yours across every road you ride.
           </p>
@@ -204,8 +204,8 @@ export default function PointsBoard({
               {board === "reading"
                 ? "Reading the live board…"
                 : board === "failed"
-                  ? "The live board didn't answer just now — your points are safe; it refreshes when you come back."
-                  : "Nobody has ridden this season yet — the first real ride takes P1."}{" "}
+                  ? "The live board didn't answer just now, your points are safe; it refreshes when you come back."
+                  : "Nobody has ridden this season yet, the first real ride takes P1."}{" "}
               Every ride you take is submitted under your rider name, never your wallet.
             </div>
           )}

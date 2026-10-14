@@ -53,9 +53,9 @@ const LANES = [-4.2, 0, 4.2];
 type Regime = "highway" | "coast" | "mountain";
 interface RoadSeg { start: number; len: number; k: number }
 const REGIME_LABEL: Record<Regime, string> = {
-  highway: "🛣 OPEN HIGHWAY · long straights, the odd sweeper — build speed",
-  coast: "🌊 COAST ROAD · rolling S-bends — swerve, don't snap",
-  mountain: "⛰ MOUNTAIN PASS · switchbacks and drops — brake into the corners",
+  highway: "🛣 OPEN HIGHWAY · long straights, the odd sweeper, build speed",
+  coast: "🌊 COAST ROAD · rolling S-bends, swerve, don't snap",
+  mountain: "⛰ MOUNTAIN PASS · switchbacks and drops, brake into the corners",
 };
 class RoadPath {
   segs: RoadSeg[] = [{ start: 0, len: 420, k: 0 }];
@@ -3078,7 +3078,7 @@ export default function ThreeRide({
         if (weatherKind === "storm") {
           stormT = weatherT;
           nextFlash = 2 + Math.random() * 4;
-          pushBuzz("⛈ STORM FRONT · rain, lightning, a slick road — the tape is frantic");
+          pushBuzz("⛈ STORM FRONT · rain, lightning, a slick road, the tape is frantic");
           pushFlash("⛈ STORM FRONT · SLICK ROAD");
         }
         if (weatherKind === "tornado") {
@@ -3513,7 +3513,7 @@ export default function ThreeRide({
             const options = (Object.keys(WORLDS) as (keyof typeof WORLDS)[]).filter((w) => w !== here);
             worldTour = options[Math.floor(Math.random() * options.length)] as WorldId;
             const label = (WORLDS[worldTour as keyof typeof WORLDS] ?? WORLDS.hotstuff).label;
-            pushBuzz(`🌀 the portal opened onto ${label} · a tour through the aggregator — scenery only, your driving and any live trades stay put`);
+            pushBuzz(`🌀 the portal opened onto ${label} · a tour through the aggregator, scenery only, your driving and any live trades stay put`);
           }
         }
         if (portal.group.position.z > 14) {
@@ -4093,7 +4093,7 @@ export default function ThreeRide({
         <a
           href="/about"
           className="gp-btn display flex w-full items-center gap-2 px-2.5 py-2 text-left text-[11px] font-bold uppercase tracking-wide text-bone hover:bg-ink sm:w-auto sm:border-2 sm:border-steel sm:bg-ink/80 sm:px-3 sm:py-1.5"
-          title="how Ride the Now works on Monad"
+          title="how Monad Rider works"
         >
           <GameIcon name="guide" /> <span className="sm:hidden">guide</span>
         </a>
@@ -4304,7 +4304,7 @@ export default function ThreeRide({
                 <p className="mt-1.5 text-[12.5px] leading-snug text-bone">
                   Same drive, live: those{" "}
                   <b>${over.sim.volume.toLocaleString()}</b> become real volume on Perpl
-                  you pick, each lane a Perpl order on Monad, earning Ride the Now points on the board.
+                  you pick, each lane a Perpl order on Monad, earning Monad Rider points on the board.
                   Trades stay tiny, capped and auto-closed.
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">

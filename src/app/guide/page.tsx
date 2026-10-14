@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { PerplKeyGuide } from "@/components/PerplKeyGuide";
 
 export const metadata: Metadata = {
-  title: "Guide · ride your Perpl account · Ride the Now",
-  description: "Four steps to trade your existing Perpl account from Ride the Now, and exactly what the key can and can't do.",
+  title: "Guide · ride your Perpl account · Monad Rider",
+  description: "Four steps to trade your existing Perpl account from Monad Rider, and exactly what the key can and can't do.",
 };
 
 export default function GuidePage() {

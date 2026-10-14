@@ -2,7 +2,7 @@ import { txUrl, shortHash } from "@/lib/monad";
 
 /** A Monad tx hash that opens on MonadScan. */
 export function TxLink({ hash, label }: { hash?: string; label?: string }) {
-  if (!hash) return <span className="num text-mute">—</span>;
+  if (!hash) return <span className="num text-mute">n/a</span>;
   return (
     <a
       href={txUrl(hash)}

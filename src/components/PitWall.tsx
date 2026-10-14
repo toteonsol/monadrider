@@ -80,7 +80,7 @@ export function PitWall({
           <Num k="spread" v={`${c.spreadBps.toFixed(1)}bp`} />
           <Num k="round trip" v={`${c.hurdleBps.toFixed(1)}bp`} />
           <Num k="30s swing" v={`${c.swingBps.toFixed(1)}bp`} />
-          <Num k="funding" v={cur ? `${cur.fundPct >= 0 ? "+" : "−"}${Math.abs(cur.fundPct).toFixed(4)}%` : "—"} />
+          <Num k="funding" v={cur ? `${cur.fundPct >= 0 ? "+" : "−"}${Math.abs(cur.fundPct).toFixed(4)}%` : "n/a"} />
         </div>
         {b.armed && (
           <button

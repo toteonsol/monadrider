@@ -107,7 +107,7 @@ export default function AppNav({
       <div className="flex min-h-[44px] items-center gap-2.5 px-2 lg:mb-6 lg:mt-2">
         <Logomark size={28} />
         <span className="display hidden text-[15px] font-black tracking-tight text-bone min-[420px]:inline lg:inline">
-          RIDE THE NOW <span className="text-papaya">MONAD</span>
+          MONAD <span className="text-papaya">RIDER</span>
         </span>
       </div>
       <div className="flex flex-1 items-center justify-end gap-2 lg:flex-none lg:flex-col lg:items-stretch lg:justify-start lg:gap-0.5">
@@ -191,7 +191,7 @@ export default function AppNav({
         </button>
       )}
       <div className="hidden lg:block lg:px-2 lg:text-[12px] lg:leading-snug lg:text-flat-dim">
-        <span className="font-bold text-flat">{tr("The honest terminal.")}</span> {tr("Tiny capped trades · auto-closed · you can't blow up.")} Perpl + Kuru on Monad.
+        <span className="font-bold text-flat">{tr("The honest terminal.")}</span> {tr("Tiny capped trades · auto-closed · you can't blow up.")} Perpl + Kuru on Monad. <span className="text-flat-dim">By Ride the Now.</span>
       </div>
       {showHelp && (
         <div className="hidden lg:mt-3 lg:flex lg:gap-1.5 lg:px-1">

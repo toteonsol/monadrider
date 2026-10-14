@@ -8,7 +8,7 @@ export const signedUsd = (n: number, dp = 2) => (n >= 0.5 * 10 ** -dp ? "+" : ""
 
 /** Price with enough digits for both BTC and sub-cent MON. */
 export const price = (p: number) => {
-  if (!p) return "—";
+  if (!p) return ", ";
   const dp = p >= 1000 ? 1 : p >= 1 ? 3 : p >= 0.01 ? 5 : 7;
   return p.toLocaleString("en-US", { minimumFractionDigits: dp, maximumFractionDigits: dp });
 };

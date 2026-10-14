@@ -1,4 +1,6 @@
-# Ride the Now · Monad edition
+# Monad Rider
+
+*Ride the Now, Monad edition.*
 
 **Drive the market. Ride it on Monad.**
 
@@ -7,7 +9,8 @@ A racing, surfing and rhythm game where every lane you hold is a real, capped pe
 - **Track:** Onchain Finance & Trading
 - **Bounties:** Agora (best mobile trading app), Kuru (consumer trading app), Perpl (best use of Perpl's API / automation)
 - **Licence:** AGPL-3.0
-- **Live app:** https://monadrider.ceoism.com (also https://ride-the-now-monad.vercel.app) · **Repo:** https://github.com/toteonsol/monadrider · **Demo video:** _added at submission_
+- **Live app:** https://monadrider.ceoism.com (also https://ride-the-now-monad.vercel.app)
+- **Videos:** [technical demo](https://youtu.be/vYJVjuZaShY) · [pitch](https://youtube.com/shorts/QRxDE_A3PPQ) · [Agora demo](https://youtu.be/ay2SCtKFkqk) · [Perpl bot demo](https://youtu.be/EghE7cLFFPE) · [ad](https://youtu.be/4oHyQQaAhoI) · **Repo:** https://github.com/toteonsol/monadrider · 
 
 ---
 
@@ -25,11 +28,11 @@ Around them sits the Paddock: a next-move ladder for newcomers (free lap → pas
 
 | Tab | What happens | Onchain |
 |---|---|---|
-| **Play** | the hub and the three worlds · practice free, no wallet | — |
+| **Play** | the hub and the three worlds · practice free, no wallet |, |
 | **Trade** | the Perpl cockpit: market board, **you drive** or **Passenger**, safety rails, four readiness lights, go live into a world, a live pit wall | one `execOrder` (IOC) tx per lane change |
 | **Spot** | buy or sell MON with AUSD through Kuru's onchain order book (Kuru Flow) | one swap tx (+ one approve the first time) |
 | **Money** | passkey wallet, AUSD and MON, receive address, AUSD in and out of Perpl margin, ride history | `createAccount` / `depositCollateral` / `withdrawCollateral` |
-| **You** | standings, points, your rides | — |
+| **You** | standings, points, your rides |, |
 
 ### Two ways to trade live
 

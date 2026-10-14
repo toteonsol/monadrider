@@ -137,8 +137,8 @@ export function Logbook({ owner }: { owner: string | null }) {
         <Tot k="live rides" v={`${totals.rides}`} />
         <Tot k="live volume" v={usd(totals.vol, 0)} />
         <Tot k="net" v={signedUsd(totals.net)} tone={totals.net > 0 ? "text-chart" : totals.net < 0 ? "text-blood" : "text-bone"} />
-        <Tot k="cost per $1M" v={totals.perM != null ? usd(totals.perM, 0) : "—"} sub="fees ÷ volume" />
-        <Tot k="win rate" v={totals.win != null ? `${Math.round(totals.win * 100)}%` : "—"} sub="of round trips" />
+        <Tot k="cost per $1M" v={totals.perM != null ? usd(totals.perM, 0) : "n/a"} sub="fees ÷ volume" />
+        <Tot k="win rate" v={totals.win != null ? `${Math.round(totals.win * 100)}%` : "n/a"} sub="of round trips" />
         <Tot k="onchain txs" v={`${totals.txs}`} tone="text-chart" />
       </div>
 

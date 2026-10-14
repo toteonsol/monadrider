@@ -28,11 +28,11 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Ride the Now · Monad · drive the market",
+  title: "Monad Rider · drive the market on Monad",
   description:
     "A racing, surfing and rhythm game where every move is a real, capped Perpl trade on Monad. Passkey login, AUSD margin, spot on Kuru. Free practice first.",
-  applicationName: "Ride the Now",
-  appleWebApp: { capable: true, title: "Ride the Now", statusBarStyle: "black-translucent" },
+  applicationName: "Monad Rider",
+  appleWebApp: { capable: true, title: "Monad Rider", statusBarStyle: "black-translucent" },
   icons: { icon: "/icons/192", apple: "/icons/180" },
 };
 

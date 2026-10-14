@@ -190,7 +190,7 @@ export function Game() {
         <div className="flex items-center gap-2.5">
           <Logomark size={26} />
           <span className="display text-[14px] font-black tracking-tight text-bone">
-            RIDE THE NOW <span className="text-papaya">MONAD</span>
+            MONAD <span className="text-papaya">RIDER</span>
           </span>
         </div>
         <div className="flex items-center gap-2">

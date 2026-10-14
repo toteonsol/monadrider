@@ -186,7 +186,7 @@ export function SpotScreen() {
                 <span>{quoting ? "quoting…" : q ? "best route on Kuru" : ""}</span>
               </div>
               <div className="num mt-1 text-2xl font-semibold">
-                {q ? `${tokenOut === "MON" ? qty(q.out, 2) : usd(q.out)} ${tokenOut === "MON" ? "MON" : ""}` : "—"}
+                {q ? `${tokenOut === "MON" ? qty(q.out, 2) : usd(q.out)} ${tokenOut === "MON" ? "MON" : ""}` : ", "}
               </div>
               {q && (
                 <div className="num mt-1 space-y-0.5 text-[11px] text-mute">

@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Ride the Now · Monad",
-    short_name: "Ride the Now",
+    name: "Monad Rider",
+    short_name: "Monad Rider",
     description: "Surf the live price wave. Every carve is a real Perpl trade on Monad.",
     start_url: "/",
     display: "standalone",

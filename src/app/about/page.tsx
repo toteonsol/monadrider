@@ -4,7 +4,7 @@ import { KURU_MON_AUSD } from "@/lib/kuru";
 import { Roadmap } from "@/components/Roadmap";
 
 export const metadata: Metadata = {
-  title: "How it works · Ride the Now on Monad",
+  title: "How it works · Monad Rider",
   description: "A trading game where the live price is a wave and every carve is a real Perpl trade on Monad.",
 };
 
@@ -35,7 +35,7 @@ export default function About() {
         <span className="text-monad">Ride it on Monad.</span>
       </h1>
       <p className="mt-4 max-w-2xl text-lg leading-relaxed text-lavender/90">
-        Ride the Now turns trading into a game you already understand. The live price draws the wave: ride the crest and
+        Monad Rider turns trading into a game you already understand. The live price draws the wave: ride the crest and
         you&apos;re long, drop into the trough and you&apos;re short. Every move is a real, capped trade on Perpl, settled on
         Monad, funded in AUSD, with a passkey for a wallet.
       </p>
