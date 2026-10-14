@@ -1,7 +1,5 @@
 # Monad Rider
 
-*Ride the Now, Monad edition.*
-
 **Drive the market. Ride it on Monad.**
 
 A racing, surfing and rhythm game where every lane you hold is a real, capped perp trade on **Perpl**, sent straight to Perpl's Exchange contract on **Monad** from a wallet you open with a **passkey (Mera)**, margined in **AUSD (Agora)**. Bank the ride as spot MON on **Kuru**.

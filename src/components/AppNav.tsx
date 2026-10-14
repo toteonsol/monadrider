@@ -191,7 +191,7 @@ export default function AppNav({
         </button>
       )}
       <div className="hidden lg:block lg:px-2 lg:text-[12px] lg:leading-snug lg:text-flat-dim">
-        <span className="font-bold text-flat">{tr("The honest terminal.")}</span> {tr("Tiny capped trades · auto-closed · you can't blow up.")} Perpl + Kuru on Monad. <span className="text-flat-dim">By Ride the Now.</span>
+        <span className="font-bold text-flat">{tr("The honest terminal.")}</span> {tr("Tiny capped trades · auto-closed · you can't blow up.")} Perpl + Kuru on Monad.
       </div>
       {showHelp && (
         <div className="hidden lg:mt-3 lg:flex lg:gap-1.5 lg:px-1">
