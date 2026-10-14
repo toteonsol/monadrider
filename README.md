@@ -118,13 +118,27 @@ This project deploys no contracts of its own. It is a client of the contracts ab
 | Passenger opens a BTC position, sent from the passkey wallet (`execOrder`) | [`0x6176e727…4176`](https://monadscan.com/tx/0x6176e727112cd4495ae6f019f3eb7aa1d55995f0de8f2a813092862493ea4176) |
 | Passenger closes it (`execOrder`) | [`0x37465d43…d4d7`](https://monadscan.com/tx/0x37465d43aa2ad0e024a5b34df22959dbf7bfebd3ec44f4a0340f2cc622f4d4d7) |
 
-**Passkey wallet on monadrider.ceoism.com:** [`0xa3De6F26…B103`](https://monadscan.com/address/0xa3De6F26352d92299231a89F3dFA4170DCC6B103) opened Perpl account #5487 with AUSD from the app ([`0x25f3b210…a9c`](https://monadscan.com/tx/0x25f3b210c4fe281598108203414f29893ea014ba11d18a06b14c5d9fd26a2a9c)), then deposited, withdrew and sent funds out.
+**Passkey wallet on monadrider.ceoism.com, full loop:** [`0x96bd58B7…7C77`](https://monadscan.com/address/0x96bd58B7c384D8aa2D80F42B9b3B25e44E367C77) (Perpl account #5493). Every tx below is the wallet's own, signed in-tab by the passkey:
 
-**Live rides through an existing Perpl account (API-key route), verified onchain by the Paddock server** (10 rides on MON, 30 fills, about $340 of volume, 13 to 14 Oct 2026). Perpl forwards each order onchain; the server counts a ride only after the tx's Exchange logs name the rider's Perpl account. First fill of each ride:
+| Step | Monad tx |
+|---|---|
+| Kuru swap MON → AUSD (Flow, from the Spot screen) | [`0x1ed9494f…9621`](https://monadscan.com/tx/0x1ed9494f63371f414dd44dc343bbf0c522a987671a3fe57dc049493c477d9621) |
+| Approve AUSD for Perpl | [`0xeee1f973…b05a`](https://monadscan.com/tx/0xeee1f9737f577e80fe389cbc1a7fcd71b23a7b79e6d5e4e56ee299bcea93b05a) |
+| Open Perpl account #5493 with AUSD (`createAccount`) | [`0x931491dd…cd7c`](https://monadscan.com/tx/0x931491dd5f6a1c62d6c0113bb21f504733164e84eeb936c6d13e2f5c30f9cd7c) |
+| Live ride on MON, 5 orders (`execOrder`), first fill | [`0x35e7b547…2938`](https://monadscan.com/tx/0x35e7b54722139a69621c40467b2be639bb29655ace93ffb9676fe5ccc1ee2938) |
+| Withdraw AUSD back to the wallet (`withdrawCollateral`) | [`0x987c4dad…424b`](https://monadscan.com/tx/0x987c4dad14d789330478ec417cf56ae115e0cf9b8658c029051e51f4a61b424b) |
+| Send AUSD out of the wallet | [`0x6aff1150…4094`](https://monadscan.com/tx/0x6aff11504529a3152bdee92ed61f94e0cd3380517e0afc689e96b35259fe4094) |
+| Second Kuru swap MON → AUSD | [`0xc250cc02…9086`](https://monadscan.com/tx/0xc250cc020c7f8cabc6940b45fd4590affc9c80c111ecc541fe5cf61e1b219086) |
+| Deposit AUSD again (`depositCollateral`) | [`0x3805db80…7d4b`](https://monadscan.com/tx/0x3805db8062c5729d206a7c580ca3ad82cfff7c45568c24cb9209a24c19057d4b) |
+| Second live ride on MON (`execOrder`), first fill | [`0x3147bb2f…4d4e`](https://monadscan.com/tx/0x3147bb2ff3bf9378e54a1e33ad4101140af8e1c16d2a24a32f496ad683e74d4e) |
 
-[`0xe02b1089…536d`](https://monadscan.com/tx/0xe02b1089dae6cf6f1aaf65cbb13a446d7d8f5307b191087d1cb12a72c287536d) · [`0x5e8d8e01…59ca`](https://monadscan.com/tx/0x5e8d8e013efa22b96da92a8f8ad2c794200cd2817f7be16b327d2410b9f459ca) · [`0x6384a4c1…1fdc`](https://monadscan.com/tx/0x6384a4c14bb656b590c1295a312ea062be2ada7377337b88f6a1eb1c9fa81fdc) · [`0x35e7b547…2938`](https://monadscan.com/tx/0x35e7b54722139a69621c40467b2be639bb29655ace93ffb9676fe5ccc1ee2938) · [`0x195153c2…027d`](https://monadscan.com/tx/0x195153c2c3ca1108d3726b2bbecae749abd396e5967cd6ed8e39da7205f4027d) · [`0x604fc289…1da0`](https://monadscan.com/tx/0x604fc289096b6f45738cf2f4140a83e637f3f64bf6230dc585066f55d0b51da0) · [`0xe06e2550…6913`](https://monadscan.com/tx/0xe06e25507c91bb35091cad050aca2488350790cb330269337e0ed0c092d86913) · [`0x3147bb2f…d4e`](https://monadscan.com/tx/0x3147bb2ff3bf9378e54a1e33ad4101140af8e1c16d2a24a32f496ad683e74d4e) · [`0xe6b5b83e…39ea`](https://monadscan.com/tx/0xe6b5b83ee3a5fb5aef58c9435143d65889c3ec1ab8c17b367d9007bf0e9d39ea) · [`0xf1158f9c…0159`](https://monadscan.com/tx/0xf1158f9c31ff0e3d6eb22f3dfb49e6ecaf32316db370aa2295d9b138b5400159)
+**Live rides verified onchain by the Paddock server** (10 rides on MON, 30 fills, about $340 of volume, 13 to 14 Oct 2026). The server counts a ride only after the tx's Exchange logs name the rider's Perpl account. First fill of each ride:
 
-Passkey wallet: [`0x7fa5861fec8aa0cfce0e504cbd0ff297c32b236a`](https://monadscan.com/address/0x7fa5861fec8aa0cfce0e504cbd0ff297c32b236a) (Perpl account #5483). Its Kuru MON → AUSD swap is on the same MonadScan page. Live rides from an existing Perpl account (API-key route) were also run; those orders are forwarded onchain by Perpl.
+*Passkey route, sent by the rider's own wallet (`execOrder`):* [`0xe02b1089…536d`](https://monadscan.com/tx/0xe02b1089dae6cf6f1aaf65cbb13a446d7d8f5307b191087d1cb12a72c287536d) (account #5488) · [`0x5e8d8e01…59ca`](https://monadscan.com/tx/0x5e8d8e013efa22b96da92a8f8ad2c794200cd2817f7be16b327d2410b9f459ca) (#5490) · [`0x6384a4c1…1fdc`](https://monadscan.com/tx/0x6384a4c14bb656b590c1295a312ea062be2ada7377337b88f6a1eb1c9fa81fdc) (#5492) · [`0x35e7b547…2938`](https://monadscan.com/tx/0x35e7b54722139a69621c40467b2be639bb29655ace93ffb9676fe5ccc1ee2938) (#5493) · [`0x3147bb2f…4d4e`](https://monadscan.com/tx/0x3147bb2ff3bf9378e54a1e33ad4101140af8e1c16d2a24a32f496ad683e74d4e) (#5493)
+
+*API-key route, an existing Perpl account; Perpl forwards each order onchain:* [`0x195153c2…027d`](https://monadscan.com/tx/0x195153c2c3ca1108d3726b2bbecae749abd396e5967cd6ed8e39da7205f4027d) · [`0x604fc289…1da0`](https://monadscan.com/tx/0x604fc289096b6f45738cf2f4140a83e637f3f64bf6230dc585066f55d0b51da0) · [`0xe06e2550…6913`](https://monadscan.com/tx/0xe06e25507c91bb35091cad050aca2488350790cb330269337e0ed0c092d86913) · [`0xe6b5b83e…39ea`](https://monadscan.com/tx/0xe6b5b83ee3a5fb5aef58c9435143d65889c3ec1ab8c17b367d9007bf0e9d39ea) · [`0xf1158f9c…0159`](https://monadscan.com/tx/0xf1158f9c31ff0e3d6eb22f3dfb49e6ecaf32316db370aa2295d9b138b5400159)
+
+First passkey wallet (table above): [`0x7fa5861fec8aa0cfce0e504cbd0ff297c32b236a`](https://monadscan.com/address/0x7fa5861fec8aa0cfce0e504cbd0ff297c32b236a) (Perpl account #5483). Its Kuru MON → AUSD swap is on the same MonadScan page.
 
 ---
 
